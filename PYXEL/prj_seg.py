@@ -948,17 +948,17 @@ class App:
 	# スコア表示
 	def score_display(self):
 		self.put_numd(self.score, 8)
-		self.put_strings(15, 22, self.str_temp)
+		self.put_strings(15 - 8, 0, self.str_temp)
 		if(self.score >= self.hiscore) and ((self.score % 10) == 0):
 			self.hiscore = self.score
-			self.put_strings(8, 22, "HIGH ")
+			self.put_strings(0, 0, "HIGH ")
 		else:
-			self.put_strings(8, 22, "SCORE")
+			self.put_strings(0, 0, "SCORE")
 
 	# スコア全表示
 	def score_displayall(self):
 #		if(self.score < self.hiscore):
-#			self.put_strings(8, 22, "SCORE")
+#			self.put_strings(0, 0, "SCORE")
 		self.score_display()
 
 	# ハイスコア表示
@@ -991,7 +991,7 @@ class App:
 #				str_temp[j++] = ' '
 #		str_temp[j] = '\0'
 
-		self.put_strings(13, 24, str_temp)
+		self.put_strings(13-8, 31, str_temp)
 
 #		self.my_hp_flag = TRUE
 
@@ -1217,7 +1217,7 @@ class App:
 				self.player_x = max(0, min(self.player_x, 256 - 16)) #24 + 4))
 
 				self.player_y += self.player_yy
-				self.player_y = max(16, min(self.player_y, 16 * 8))#256 - 16))
+				self.player_y = max(16, min(self.player_y, 256 - 16)) #16 * 8))
 
 				# プレイヤーの弾発射
 				if(self.trgcount > 0):
@@ -1445,7 +1445,7 @@ class App:
 				pyxel.blt(128 - self.logox - 48 - 16, 48 - 16, 0, 0, 0, 128, 64, 0)
 
 		elif self.scene == "GAME" or self.scene == "PAUSE" or self.scene == "GAMEOVER" or self.scene == "CONTINUE":
-			pyxel.bltm(0, 0, 0, 0, 0, 256, 256, 0, 0, 1)
+#			pyxel.bltm(0, 0, 0, 0, 0, 256, 256, 0, 0, 1)
 
 
 			# プレイヤーの弾描画
@@ -1483,7 +1483,7 @@ class App:
 			self.put_strings(self.message_x, self.message_y, self.message)
 
 			# 各種ゲージ表示
-			self.put_strings(8, 24, "LIFE ")
+			self.put_strings(0, 31, "LIFE ")
 			self.score_displayall()
 			self.put_my_hp_dmg()
 
