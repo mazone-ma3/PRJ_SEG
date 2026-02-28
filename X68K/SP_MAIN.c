@@ -77,14 +77,14 @@ void put_numd(long j, char digit)
 void score_display(void)
 {
 	put_numd(score, 8);
-	put_strings(SCREEN2, 15, 22 , str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 15-8, 0 , str_temp, CHRPAL_NO);
 	if(score >= hiscore){
 		if((score % 10) == 0){
 			hiscore = score;
-			put_strings(SCREEN2, 8, 22, "HIGH ", CHRPAL_NO);
+			put_strings(SCREEN2, 0, 0, "HIGH ", CHRPAL_NO);
 		}
 	}else
-		put_strings(SCREEN2, 8, 22, "SCORE", CHRPAL_NO);
+		put_strings(SCREEN2, 0, 0, "SCORE", CHRPAL_NO);
 }
 
 void score_displayall(void)
@@ -698,7 +698,7 @@ short game_run(short mode){
 			break;
 	}
 
-	put_strings(SCREEN2, 8, 24, "LIFE", CHRPAL_NO);
+	put_strings(SCREEN2, 0, 31, "LIFE", CHRPAL_NO);
 
 //	spr_count = old_count = 0;
 /* ゲームのメインループ */

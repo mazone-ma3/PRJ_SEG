@@ -186,7 +186,7 @@ void put_my_hp_dmg(void)
 		str_temp[j++] = '`';
 	str_temp[j] = '\0';
 
-	put_strings(SCREEN2, 13, 24, str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 13-8, 31, str_temp, CHRPAL_NO);
 
 	my_hp_flag = TRUE;
 }

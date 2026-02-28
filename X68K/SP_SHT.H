@@ -31,7 +31,7 @@ enum {
 	JIKI_INIT_Y = ((7 * 8 + 4 - SPR_OFS_Y) << SHIFT_NUM),
 
 	JIKI_MAX_X = (SPR_MAX_X - ((16) << SHIFT_NUM)),	/* Ž©‹@ˆÚ“®”ÍˆÍ */
-	JIKI_MAX_Y = ((18 * 8) << SHIFT_NUM), //(SPR_MAX_Y - (16 << SHIFT_NUM)),
+	JIKI_MAX_Y = (SPR_MAX_Y - (16 << SHIFT_NUM)),//((18 * 8) << SHIFT_NUM), //
 
 	JIKI_MIN_X = (SPR_MIN_X), // + 8),
 	JIKI_MIN_Y = ((16 * 2) << SHIFT_NUM), //(SPR_MIN_Y),

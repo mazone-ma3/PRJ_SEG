@@ -778,7 +778,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			bgram = (unsigned short *)0xebe000;
 			bgram += (x * 2 + (y) * 0x80) / 2; /* BG1 */
 			for(x = 0; x < 32; ++x){
-				*(bgram++) = (0x18)*4;
+//				*(bgram++) = (0x18)*4;
 			}
 		}
 
