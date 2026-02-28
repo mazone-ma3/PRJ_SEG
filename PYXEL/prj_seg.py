@@ -743,8 +743,8 @@ class App:
 		self.stars = [Star(i * (256 / self.starnums)) for i in range(self.starnums)]
 		self.trgcount = 0
 
-		pyxel.sounds[0].mml("t192l8dfecfecd2&d8<a4>c4dfecfecd2&d8<a4>c4cgfdgfde2&e8d4g4aa+agagfefedcdc<a>cdfecfecd2&d8<a4>c4dfecfecd2&d8<a4>c4cgfdgfde2&e8d4g4aa+agagfefedcl32d.r64d.r64c.r64c.r64<a.r64a.r64>c.r64c.r64l16d1&d2r4r8r32c32d32e1&e2r4r8r32g1&g2r2r8aa+agagfefedcdc<a>c<aa+agagfefedcdc<a>c>l8")
-		pyxel.sounds[1].mml("t192l8ddddddd<a>ddddddd<a>ccccccc<g>ccccccc<a><a+a+a+a+a+a+a+a+ggggggggaaaaaaaa+ aaaagggg>ddddddd<a>ddddddd<a>ccccccc<g>ccccccc<a><a+a+a+a+a+a+a+a+ggggggggaaaaaaaa+aaaagggg>dddd dddd dddd ddddcccc cccc cccc cccc<a+a+a+a+ a+a+a+a+ a+a+a+a+ a+a+a+a+<aaaa aagg aaaa aaaa+>")
+		pyxel.sounds[0].mml("t195l8dfecfecd2&d8<a4>c4dfecfecd2&d8<a4>c4cgfdgfde2&e8d4g4aa+agagfefedcdc<a>cdfecfecd2&d8<a4>c4dfecfecd2&d8<a4>c4cgfdgfde2&e8d4g4aa+agagfefedcl32dr32dr32cr32cr32<ar32ar32>cr32cr32l16d1&d2r2 c32d32e1&e2r16r8r4 g1&g2r2 aa+agagfefedcdc<a>c<aa+agagfefedcdc<a>c>l8")
+		pyxel.sounds[1].mml("t195l8ddddddd<a>ddddddd<a>ccccccc<g>ccccccc<a><a+a+a+a+a+a+a+a+ggggggggaaaaaaaa+ aaaagggg>ddddddd<a>ddddddd<a>ccccccc<g>ccccccc<a><a+a+a+a+a+a+a+a+ggggggggaaaaaaaa+aaaagggg>dddd dddd dddd ddddcccc cccc cccc cccc<a+a+a+a+ a+a+a+a+ a+a+a+a+ a+a+a+a+<aaaa aagg aaaa aaaa+>")
 #		Sound.mml()
 
 		pyxel.run(self.update, self.draw)
