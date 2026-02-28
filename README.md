@@ -1,8 +1,10 @@
 # PRJ_SEG
 Project Segreta for X68000 / Pyxel
+
 シューティングゲーム　Projectセグレタ
 
 開発中です。以下、草案。
+
 
 
 2026/6/8目途に作る
@@ -34,6 +36,7 @@ Project Segreta for X68000 / Pyxel
 背景　緑　縦スクロール
 
 原っぱ、草むら、林と変化
+
 
 
 X68K 先行開発する
