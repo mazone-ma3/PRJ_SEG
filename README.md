@@ -1,7 +1,5 @@
 # PRJ_SEG
-Project Segreta for X68000 / Pyxel
-
-シューティングゲーム　Projectセグレタ
+シューティングゲーム　Project Segreta(セグレタ)
 
 開発中です。PRJ_RAINを下敷きにしています。
 
