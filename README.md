@@ -3,9 +3,9 @@ Project Segreta for X68000 / Pyxel
 
 シューティングゲーム　Projectセグレタ
 
-開発中です。以下、草案。
+開発中です。
 
-
+#以下、草案。
 
 2026/6/8目途に作る
 
@@ -37,7 +37,7 @@ Project Segreta for X68000 / Pyxel
 
 原っぱ、草むら、林と変化
 
-
+#想定機種
 
 X68K 先行開発する
 
@@ -48,5 +48,7 @@ FM TOWNS 多分やらない
 MSX2/turboR やらない
 
 PC-88VA やらない
+
 MSX2++ 検討はする
+
 その他 やらない
