@@ -495,6 +495,8 @@ asm volatile("	andi.w	#0xf8ff,%sr\n");
 #define dispmode ((volatile unsigned short *)0xeb0810)
 #define video_c ((volatile unsigned short *)0xeb2400)
 
+#define sysport4 ((volatile unsigned char *)0xe8e007)
+
 #define vsync ((volatile unsigned char *)0xe88001)
 
 //	#define scroll_grp_x ((volatile unsigned short *)0xe8001c)
@@ -507,9 +509,9 @@ asm volatile("	andi.w	#0xf8ff,%sr\n");
 void init_crt(void)
 {
 asm volatile("	ori.w	#0x0700,%sr\n");
-
+/*
 	*crtcr20 = 0x11; //0x01b;
-//	crtc[0] = 0x44; //69;
+//	crtc[0] = 67; //0x44; //69;
 	crtc[1] = 7; //0x6; //6;
 	crtc[2] = 20; //0xb; //11; 
 	crtc[3] = 52; //0x3b; //59 ;
@@ -518,7 +520,20 @@ asm volatile("	ori.w	#0x0700,%sr\n");
 	crtc[6] = 0x28; //0x28; //40 ;
 	crtc[7] = 0x228; //0x228; //552;
 	crtc[0] = 67; //0x44; //69;
-
+	crtc[8] = 0x1b;
+*/
+	crtc[0] = 67; //0x44; //69;
+	crtc[1] = 7; //0x6; //6;
+	crtc[2] = 20; //0xb; //11; 
+	crtc[3] = 52; //0x3b; //59 ;
+	crtc[4] = 0x240; //0x237; //567;
+	crtc[5] = 0; //0x5; //5 ;
+	crtc[6] = 0x28; //0x28; //40 ;
+	crtc[7] = 0x228; //0x228; //552;
+//	crtc[0] = 67; //0x44; //69;
+	*crtcr20 = 0x11; //0x01b;
+	crtc[8] = 0x1b;
+	*sysport4 = 0xf;
 
 //	unsigned char volatile *vsync = (unsigned char *)0xe88001;	/* MFP */
 /* VSYNCë“Çø */
@@ -527,6 +542,15 @@ asm volatile("	ori.w	#0x0700,%sr\n");
 
 	while(!((*vsync) & 0x10));	/* í≤ç∏íÜ */
 	while((*vsync) & 0x10);		/* í≤ç∏íÜ */
+	while(!((*vsync) & 0x10));	/* í≤ç∏íÜ */
+	while((*vsync) & 0x10);		/* í≤ç∏íÜ */
+/*
+asm volatile(
+	"move.w	#0xFF,%d0\n"
+	"crtcloop:\n"
+	"dbra	%d0,crtcloop\n"
+);*/
+
 //	wait_vsync();
 
 //	*video_c = 0x0;
