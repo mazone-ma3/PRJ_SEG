@@ -136,17 +136,31 @@ MK_SPR1(baku3_comb, IMG_SET(2, 0));
 /*,\*/
 
 #define ZAKO_PARTS 1
-#define BOSS1_PARTS 4*2
+
+#define MIDDLE1_PARTS 2*2
+
+CONST SPR_COMB middle1_comb[MIDDLE1_PARTS] = {
+	{  IMG_SET(6, 1),  0 - 8,  0-8,0,},
+	{  IMG_SET(7, 1), 16 - 8,  0-8,0,},
+	{  IMG_SET(6, 2),  0 - 8,  16-8,0,},
+	{  IMG_SET(7, 2), 16 - 8,  16-8,0,},
+};
+
+#define BOSS1_PARTS 4*3
 
 CONST SPR_COMB boss1_comb[BOSS1_PARTS] = {
-	{  IMG_SET(0, 1),  0 - 24,  0,0,},
-	{  IMG_SET(1, 1), 16 - 24,  0,0,},
-	{  IMG_SET(2, 1), 32 - 24,  0,0,},
-	{  IMG_SET(3, 1), 48 - 24,  0,0,},
-	{  IMG_SET(0, 2),  0 - 24, 16,0,},
-	{  IMG_SET(1, 2), 16 - 24, 16,0,},
-	{  IMG_SET(2, 2), 32 - 24, 16,0,},
-	{  IMG_SET(3, 2), 48 - 24, 16,0,},
+	{  IMG_SET(4, 3),  0 - 24,  0-16,0,},
+	{  IMG_SET(5, 3), 16 - 24,  0-16,0,},
+	{  IMG_SET(6, 3), 32 - 24,  0-16,0,},
+	{  IMG_SET(7, 3), 48 - 24,  0-16,0,},
+	{  IMG_SET(4, 4),  0 - 24, 16-16,0,},
+	{  IMG_SET(5, 4), 16 - 24, 16-16,0,},
+	{  IMG_SET(6, 4), 32 - 24, 16-16,0,},
+	{  IMG_SET(7, 4), 48 - 24, 16-16,0,},
+	{  IMG_SET(4, 5),  0 - 24, 32-16,0,},
+	{  IMG_SET(5, 5), 16 - 24, 32-16,0,},
+	{  IMG_SET(6, 5), 32 - 24, 32-16,0,},
+	{  IMG_SET(7, 5), 48 - 24, 32-16,0,},
 
 /*	WIDE_PARTS(0, 1, -1),
 	WIDE_PARTS(1, 1, 0),
@@ -160,6 +174,11 @@ CONST SPR_COMB boss1_comb[BOSS1_PARTS] = {
 	{ 24,  8,  0,},
 	{ 25,  8,  8,},
 };*/
+
+MK_SPR1(star1_comb, IMG_SET(3, 2));
+MK_SPR1(pow1_comb, IMG_SET(5, 0));
+MK_SPR1(pow2_comb, IMG_SET(6, 0));
+MK_SPR1(pow3_comb, IMG_SET(7, 0));
 
 
 /* 複合スプライト最終定義テーブル */
@@ -209,8 +228,14 @@ CONST SPR_INFO spr_info[] = {
 	{ ZAKO_PARTS,    baku2_comb,},
 	{ ZAKO_PARTS,    baku3_comb,},
 
-	{ ZAKO_PARTS,    teki1_0comb,},
-//	{ BOSS1_PARTS,    boss1_comb,},
+//	{ ZAKO_PARTS,    teki1_0comb,},
+	{ BOSS1_PARTS,    boss1_comb,},
+	{ MIDDLE1_PARTS,  middle1_comb,},
+
+	{ ZAKO_PARTS,    star1_comb,},
+	{ ZAKO_PARTS,    pow1_comb,},
+	{ ZAKO_PARTS,    pow2_comb,},
+	{ ZAKO_PARTS,    pow3_comb,},
 };
 
 /* 複合スプライトNo.参照用定数 */
@@ -258,7 +283,13 @@ enum {
 	PAT_BAKU2,
 	PAT_BAKU3,
 
-	PAT_BOSS1
+	PAT_BOSS1,
+	PAT_MIDDLE1,
+
+	PAT_STAR1,
+	PAT_POW1,
+	PAT_POW2,
+	PAT_POW3
 };
 
 int teki5_pat[32] = {

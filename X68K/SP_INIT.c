@@ -506,6 +506,8 @@ asm volatile("	andi.w	#0xf8ff,%sr\n");
 //	#define scroll_bg0_y ((volatile unsigned short *)0xeb0802)
 
 
+/* éQçl Z_CRT.R */
+/* (ä»à’î≈) */
 void init_crt(void)
 {
 asm volatile("	ori.w	#0x0700,%sr\n");

@@ -23,6 +23,8 @@ short game_loop(void);		/* ゲーム本体 */
 void wait_vsync(void);
 void set_sprite(void);
 
+void boss_tkappend(int i, int pat, int move, int dir, int shot);
+
 #define FALSE 0
 #define TRUE 1
 
@@ -507,6 +509,8 @@ void move_teki_bomb(int i)
 				check_revshot();
 			teki_hp[i] = 0;
 //			teki[i].y = SPR_DEL_Y;
+
+			boss_tkappend(i, PAT_STAR1, 11, DIR_DOWN - 4, 0);
 			break;
 	}
 
@@ -797,7 +801,11 @@ void boss_tkappend(int i, int pat, int move, int dir, int shot)
 	teki[j].y = teki[i].y;
 	teki[j].x = teki[i].x;
 
-	teki_hp[j] = 10;
+	if(pat != PAT_STAR1)
+		teki_hp[j] = 10;
+	else
+		teki_hp[j] = 3;
+
 	teki_pal[j] = CHRPAL_NO;
 	teki_shotinfo[j] = shot;
 	teki_dir[j] = dir;
@@ -865,9 +873,27 @@ void move_boss_pat1(int i)
 	teki_dir[i] = dir;
 
 }
+
+/*************************/
+/* スター移動パターン    */
+/*************************/
+void move_star_pat1(int i)
+{
+	/* 縦方向移動処理 */
+	if(!(tmp_y > (128 << SHIFT_NUM)))
+		tmp_y += ((3 << SHIFT_NUM) / 2);	/* ゆっくり */
+	else
+		tmp_y += (2 << SHIFT_NUM);	/* 高速 */
+
+	/* 画面外消去(下方向) */
+	if(tmp_y > (SPR_MAX_Y)){
+		teki_hp[i] = 0;
+	}
+}
+
 /************/
 
-#define MOVETEKIMAX 10
+#define MOVETEKIMAX 12
 
 SUBFUNC moveteki_tbl[MOVETEKIMAX] = 
 {
@@ -881,6 +907,8 @@ SUBFUNC moveteki_tbl[MOVETEKIMAX] =
 	dummy,
 	dummy,
 	move_boss_pat1,
+	dummy,
+	move_star_pat1,
 };
 
 /************/
@@ -918,23 +946,25 @@ void move_teki(void)
 //							if(tmp_yy > (-20 << SHIFT_NUM)){
 							if(tmp_yy > (-(4 << SHIFT_NUM))){
 
-								/* 敵ダメージ */
-								teki_pal[i] = REVPAL_NO;
-								teki_dmgtime[i] = DMGTIME;
+								if(teki_pat[i] != PAT_STAR1){
 
-								--teki_hp[i];
+									/* 敵ダメージ */
+									teki_pal[i] = REVPAL_NO;
+									teki_dmgtime[i] = DMGTIME;
 
-								if(uramode)
-									shottome2(tekishot_dir(), PAT_TKSHOT1);
+									--teki_hp[i];
 
-								/* ノーマル弾なら画面外に消去 */
-//								myshot[j].y = 0; /*SPR_DEL_Y;*/
-								/*myshot[j].yy = 0;*/
-								trgnum--;
-								DEL_LIST(MAX_MYSHOT, j, j2, myshot_next, myshot_free);
+									if(uramode)
+										shottome2(tekishot_dir(), PAT_TKSHOT1);
 
-								score += 10;		/* 敵の点数を足す */
-								scrdspflag = TRUE;
+									/* ノーマル弾なら画面外に消去 */
+//									myshot[j].y = 0; /*SPR_DEL_Y;*/
+									/*myshot[j].yy = 0;*/
+									trgnum--;
+									DEL_LIST(MAX_MYSHOT, j, j2, myshot_next, myshot_free);
+									score += 10;		/* 敵の点数を足す */
+									scrdspflag = TRUE;
+								}
 								break;
 							}
 						}
@@ -952,13 +982,20 @@ void move_teki(void)
 						if(tmp_yy > p_coli->y2){
 
 							/* 自機ダメージ */
-							my_dmg();
+							if(teki_pat[i] != PAT_STAR1){
+								my_dmg();
+							}else{
+								teki_hp[i] = 0;
+								score += 500;
+								scrdspflag = TRUE;
+							}
 						}
 					}
 				}
 			}
 
-			do_shotcheck(i);
+			if(teki_pat[i] != PAT_STAR1)
+				do_shotcheck(i);
 		}
 		DEF_SP(spr_count, teki[i].x, teki[i].y, teki_pat[i], teki_pal[i], PRO_TEKI);
 
