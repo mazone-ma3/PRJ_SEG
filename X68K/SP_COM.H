@@ -809,7 +809,7 @@ void boss_tkappend(int i, int pat, int move, int dir, int shot)
 	teki[j].x = teki[i].x;
 
 	if(pat != PAT_STAR1)
-		teki_hp[j] = 10;
+		teki_hp[j] = 3; //10;
 	else
 		teki_hp[j] = 3;
 

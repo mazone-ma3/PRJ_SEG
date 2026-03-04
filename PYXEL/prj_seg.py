@@ -238,6 +238,7 @@ class Enemy:
 			pat = 0
 
 		self.pat = pat
+		self.pat_y = 1
 
 		self.chr = chr
 
@@ -258,7 +259,7 @@ class Enemy:
 		y = self.y;
 		x = self.x;
 
-		hp = 10;
+		hp = 3 #10;
 #		teki_pal[j] = CHRPAL_NO;
 #		self.teki_shotinfo = shot;
 #		self.teki_dir = dir;
@@ -575,6 +576,18 @@ class Enemy:
 				tmp_y +=  (direction[dir][1]) / (1 << 3)
 				self.teki_dir = dir;
 
+			elif self.chr == 11:
+				# STAR1
+				# 敵機縦方向移動処理
+				if((tmp_y <= (128))): # << SHIFT_NUM))):
+					tmp_y += 1.5 #((3 << 1) / 2) #SHIFT_NUM) / 2)	/* ゆっくり */
+				else:
+					tmp_y += (2) # << SHIFT_NUM)	/* 高速 */
+
+				# 敵機画面外消去(下方向)
+				if(tmp_y > 256): #(SPR_MAX_Y)):
+					self.hp = 0
+
 			else:
 				tmp_x = self.x
 				tmp_y = self.y + self.speed
@@ -603,10 +616,14 @@ class Enemy:
 			elif(self.dmgtime ==15):
 				if(uramode > 0):
 					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
-				self.hp = 0
+				self.hp = 3
+				self.chr = 11
+				self.pat = 3
+				self.pat_y = 2
+				self.pal = 0
 
 		# 敵弾を発射する
-		if (self.dmgtime == 0):	# and (self.tkshotcount >= self.shot_c): #(6 << 3): #30:
+		if (self.dmgtime == 0) and (self.chr != 11):	# and (self.tkshotcount >= self.shot_c): #(6 << 3): #30:
 #			player_center_x = player_x + 8
 #			player_center_y = player_y + 8
 #			enemy_center_x = self.x + 8
@@ -682,10 +699,10 @@ class Enemy:
 		if(self.dmg == True or self.pal == 1):
 			for i in range(0,16):
 				pyxel.pal(i,8)
-#		if(self.type == "PAT_BOSS1"):
-#			pyxel.blt(self.x-24, self.y-8, 2, 0, 32+16, 64, 32, 0) #14)
-#		else:
-		pyxel.blt(self.x, self.y, 2, self.pat * 16, 16, 16, 16, 0) #14)
+		if(self.type == "PAT_BOSS1"):
+			pyxel.blt(self.x-24, self.y-16, 2, 64, 48, 64, 48, 0)
+		else:
+			pyxel.blt(self.x, self.y, 2, self.pat * 16, self.pat_y * 16, 16, 16, 0) #14)
 		pyxel.pal()
 #		self.dmg = False
 
@@ -1257,16 +1274,17 @@ class App:
 									enemy.y < bullet.y + bullet.h and
 									enemy.y + 16 > bullet.y):
 
-								enemy.hp = enemy.hp - 1
-								self.score += 10
-								enemy.dmgtime = 1
-								enemy.dmg = True
-								self.player_bullets.remove(bullet)
+								if(enemy.chr != 11):
+									enemy.hp = enemy.hp - 1
+									self.score += 10
+									enemy.dmgtime = 1
+									enemy.dmg = True
+									self.player_bullets.remove(bullet)
 
-								if(self.uramode):
-#									enemy.shottome2(tekishot_dir(), PAT_TKSHOT1);
-									dir = tekishot_dir(self.player_x, self.player_y, enemy.x, enemy.y)
-									enemy.shottome2(self.player_x, self.player_y, dir, 0, self.enemy_bullets, self.uramode)
+									if(self.uramode):
+#										enemy.shottome2(tekishot_dir(), PAT_TKSHOT1);
+										dir = tekishot_dir(self.player_x, self.player_y, enemy.x, enemy.y)
+										enemy.shottome2(self.player_x, self.player_y, dir, 0, self.enemy_bullets, self.uramode)
 
 								break
 
@@ -1304,11 +1322,17 @@ class App:
 							enemy.x + 16 > self.player_x+9 and
 							enemy.y < self.player_y + 9+1 and
 							enemy.y + 16 > self.player_y+9):
-							self.my_dmg = True
-							self.noshotdmg_flag = True
-#							pyxel.play(3,16,0,False,True)
-#							if(self.mypal_dmgtime == 0):
-#							self.my_hp = self.my_hp - 1
+
+							if(enemy.chr != 11):
+								self.my_dmg = True
+								self.noshotdmg_flag = True
+#								pyxel.play(3,16,0,False,True)
+#								if(self.mypal_dmgtime == 0):
+#									self.my_hp = self.my_hp - 1
+							else:
+								self.score += 500
+								enemy.hp = 0
+								pyxel.play(3,17,0,False,True)
 
 					# 当たり判定（プレイヤーと敵の弾）
 					for bullet  in self.enemy_bullets[:]:

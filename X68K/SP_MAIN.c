@@ -543,7 +543,7 @@ void game_init(void){
 	INIT_LIST(MAX_MYSHOT, i, myshot_next, myshot_free);
 	INIT_LIST(MAX_TKSHOT, i, tkshot_next, tkshot_free);
 	INIT_LIST(MAX_TEKI, i, teki_next, teki_free);
-
+	teki_num = 0;
 
 	score = 0;
 	tkshot_c = (6 << SHIFT_NUM);
