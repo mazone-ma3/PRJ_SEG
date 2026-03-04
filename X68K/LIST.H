@@ -10,12 +10,13 @@
 
 #define INIT_LIST(MAX, INDEX, NEXT, FREE) {\
 	{\
-		for(INDEX = 0; INDEX <= MAX; INDEX++){\
+		for(INDEX = 0; INDEX < MAX; INDEX++){\
 			FREE[INDEX] = INDEX + 1;\
 			NEXT[INDEX] = END_LIST;\
 		}\
-		FREE[MAX - 1] = END_LIST;\
+		FREE[MAX-1] = END_LIST;\
 		FREE[MAX] = 0;\
+		NEXT[MAX] = END_LIST;\
 	}\
 }
 
@@ -43,6 +44,7 @@
 	FREE[INDEX] = FREE[MAX];\
 	FREE[MAX] = INDEX;\
 	NEXT[PREV] = NEXT[INDEX];\
+	NEXT[INDEX] = END_LIST;\
 	INDEX = PREV;\
 }
 

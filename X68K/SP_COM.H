@@ -442,19 +442,19 @@ void move_tekishot(void)
 
 			}/* 敵機弾と自機の当たり判定→自機ダメージ */
 			else{
-			 if((tmp_xx = my_data[0].x - tmp_x) < ((TKD_OFS_X - MY_OFS_X + TKD_SIZE_X) << SHIFT_NUM)){
-				if(tmp_xx > ((TKD_OFS_X - MY_OFS_X - MY_SIZE_X) << SHIFT_NUM)){
-					if((tmp_yy = my_data[0].y - tmp_y) < ((TKD_OFS_Y - MY_OFS_Y + TKD_SIZE_Y) << SHIFT_NUM)){
-						if(tmp_yy > ((TKD_OFS_Y - MY_OFS_Y - MY_SIZE_Y) << SHIFT_NUM)){
-							/* 自機ダメージ */
-							del_tkshot(i);
-							DEL_LIST(MAX_TKSHOT, i, j, tkshot_next, tkshot_free);
-							my_dmg();
+				if((tmp_xx = my_data[0].x - tmp_x) < ((TKD_OFS_X - MY_OFS_X + TKD_SIZE_X) << SHIFT_NUM)){
+					if(tmp_xx > ((TKD_OFS_X - MY_OFS_X - MY_SIZE_X) << SHIFT_NUM)){
+						if((tmp_yy = my_data[0].y - tmp_y) < ((TKD_OFS_Y - MY_OFS_Y + TKD_SIZE_Y) << SHIFT_NUM)){
+							if(tmp_yy > ((TKD_OFS_Y - MY_OFS_Y - MY_SIZE_Y) << SHIFT_NUM)){
+								/* 自機ダメージ */
+								del_tkshot(i);
+								DEL_LIST(MAX_TKSHOT, i, j, tkshot_next, tkshot_free);
+								my_dmg();
+							}
 						}
 					}
 				}
-			}
-		DEF_SP(spr_count, tmp_x, tmp_y, k, CHRPAL_NO, PRO_TEKISHOT);
+				DEF_SP(spr_count, tmp_x, tmp_y, k, CHRPAL_NO, PRO_TEKISHOT);
 
 			}
 		}
@@ -505,12 +505,17 @@ void move_teki_bomb(int i)
 			break;
 
 		case 15:
+//			boss_tkappend(i, PAT_STAR1, 11, DIR_DOWN, 0);
 			if(uramode)
 				check_revshot();
-			teki_hp[i] = 0;
+//			teki_hp[i] = 0;
 //			teki[i].y = SPR_DEL_Y;
 
-			boss_tkappend(i, PAT_STAR1, 11, DIR_DOWN - 4, 0);
+			teki_hp[i] = 3;
+			teki_pat[i] = PAT_STAR1;
+			teki_move[i] = 11;
+			teki_pal[i] = CHRPAL_NO;
+
 			break;
 	}
 
@@ -786,10 +791,12 @@ void move_teki_pat6(int i)
 
 void boss_tkappend(int i, int pat, int move, int dir, int shot)
 {
-	int j;
+	int j = 0;
 
-	if(teki_free[MAX_TEKI] == END_LIST)
+	if(teki_free[MAX_TEKI] == END_LIST){
+//	if(teki_free[0] == END_LIST)
 		return;
+	}
 
 	ADD_LIST(MAX_TEKI, j, teki_next, teki_free);
 
@@ -918,6 +925,9 @@ void move_teki(void)
 {
 	int i, j, k, l, j2;
 
+	put_numd(teki_num, 2);
+	put_strings(SCREEN2, 0, 1 , str_temp, CHRPAL_NO);
+
 	SEARCH_LIST2(MAX_TEKI, i, k, teki_next){
 
 		/* 敵機移動処理 */
@@ -985,6 +995,7 @@ void move_teki(void)
 							if(teki_pat[i] != PAT_STAR1){
 								my_dmg();
 							}else{
+				seflag = 4;
 								teki_hp[i] = 0;
 								score += 500;
 								scrdspflag = TRUE;
@@ -1001,6 +1012,8 @@ void move_teki(void)
 
 		/* 敵消滅 → 爆発パターンへ */
 		if(!teki_hp[i]){
+//			if(teki_pat[i] == PAT_STAR1)
+//				seflag = 4;
 //			teki[i].y = SPR_DEL_Y;
 			DEL_LIST(MAX_TEKI, i, k, teki_next, teki_free);
 			--teki_num;
