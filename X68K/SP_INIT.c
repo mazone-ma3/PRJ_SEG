@@ -481,9 +481,11 @@ asm volatile("	andi.w	#0xf8ff,%sr\n");
 #define scroll_bg1_x ((volatile unsigned short *)0xeb0806)
 #define scroll_bg1_y ((volatile unsigned short *)0xeb0804)
 
-#define scroll_x ((volatile unsigned short *)0xe80014)
-#define scroll_y ((volatile unsigned short *)0xe80016)
+//#define scroll_x ((volatile unsigned short *)0xe80014)
+//#define scroll_y ((volatile unsigned short *)0xe80016)
 
+#define scroll_x ((volatile unsigned short *)0xe8001c)
+#define scroll_y ((volatile unsigned short *)0xe8001e)
 //#define crtcr20 ((volatile unsigned short *)0xe80028)
 
 #define crtcr20 ((volatile unsigned char *)0xe80029)
@@ -733,7 +735,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 		wait_vsync();
 		pal_allblack(CHRPAL_NO);
 		pal_allblack(BGPAL_NO);
-//		*scroll_x = 256; //(-(128-48-16) + 512) % 512;
+		*scroll_x = 0; //(-(128-48-16) + 512) % 512;
 //		*scroll_y = 0; //(-48+16 + 512) % 512;
 		vram =  (unsigned short *)0xc00000;
 //		paint_grp(0x0);
@@ -742,13 +744,20 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 		wait_vsync();
 
 		hiscore_display();
+		put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", CHRPAL_NO);
 		put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 17, "       j k   ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 18, " 2026 bcdefgh", CHRPAL_NO);
+		put_strings(SCREEN2, 9, 23, "       j k   ", CHRPAL_NO);
+		put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", CHRPAL_NO);
 
 		pal_all(CHRPAL_NO, org_pal);
 		pal_all(BGPAL_NO, org_pal);
 		pal_all(REVPAL_NO, rev_pal);
+
+#ifndef XSP
+			if(init_raster()){
+				goto end;
+			}
+#endif
 
 		do{
 			keycode = keyscan();
@@ -769,10 +778,16 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			bg_roll();
 			keycode = keyscan();
 		}while((keycode & (KEY_A | KEY_START)));
+		put_strings(SCREEN2, 8, 4, "               ", CHRPAL_NO);
 		put_strings(SCREEN2, 9, 14, "             ", CHRPAL_NO);
 		put_strings(SCREEN2, 9, 12, "             ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 17, "             ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 18, "             ", CHRPAL_NO);
+		put_strings(SCREEN2, 9, 23, "             ", CHRPAL_NO);
+		put_strings(SCREEN2, 9, 24, "             ", CHRPAL_NO);
+
+#ifndef XSP
+		reset_raster();
+#endif
+		*scroll_x = 256;
 
 		if(((errlv 
 				//= title_demo()
@@ -834,10 +849,10 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 */
 
 #ifndef XSP
-			if(init_raster()){
-				stop_fmdbgm();
-				goto end;
-			}
+//			if(init_raster()){
+//				stop_fmdbgm();
+//				goto end;
+//			}
 #endif
 			errlv = game_run(errlv);
 
@@ -846,7 +861,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 /*				mcd_release();*/
 			}
 			if(errlv == SYSEXIT){
-				reset_raster();
+//				reset_raster();
 				stop_fmdbgm();
 				break;
 			}
@@ -861,7 +876,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			}
 
 #ifndef XSP
-			reset_raster();
+//			reset_raster();
 #endif
 
 			stop_fmdbgm();
