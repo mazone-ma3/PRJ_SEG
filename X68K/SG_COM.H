@@ -1214,26 +1214,54 @@ void com_dummy(void)//(unsigned char i)
 	waitcount = 1;
 }
 
+#ifdef TOWNS
+int put_x = 0;
+int put_y = 0;
+char put_strdata[1000] = "";
+
+void com_putmessage(int i)
+{
+	put_x = command[schedule_ptr + 1];
+	put_y = command[schedule_ptr + 2];
+	strcpy(put_strdata, (char *)message[command[schedule_ptr + 3]]);
+}
+
+#else
+
 void com_putmessage(void)//(unsigned char i)
 {
 	put_strings(SCREEN2, command[schedule_ptr + 1], command[schedule_ptr + 2], (char *)message[command[schedule_ptr + 3]], CHRPAL_NO);
 }
+#endif
 
 void com_putstage(void)//(unsigned char i)
 {
+#ifndef TOWNS
 	unsigned char str_x = command[schedule_ptr + 1];
 	unsigned char str_y = command[schedule_ptr + 2];
-
+#else
+	put_x = command[schedule_ptr + 1];
+	put_y = command[schedule_ptr + 2];
+	strcpy(put_strdata, "STAGE ");
+#endif
 	if(stage < STAGEMAX)
 		++stage;
 
+#ifndef TOWNS
 	put_strings(SCREEN2, str_x, str_y, "STAGE", CHRPAL_NO);
+#endif
+
 	if(stage > 0){
 		if(stage < 10)
 			put_numd((long)stage, 1);
 		else
 			put_numd((long)stage, 2);
+
+#ifdef TOWNS
+		strcat(put_strdata, str_temp);
+#else
 		put_strings(SCREEN2, str_x + 6, str_y, str_temp, CHRPAL_NO);
+#endif
 	}
 }
 
@@ -1376,11 +1404,14 @@ short game_loop(void){
 					put_strings(SCREEN2, 14, 13, "PAUSE", CHRPAL_NO);
 //				bg_roll();
 
-//				do_putmessage();
-
+#ifdef TOWNS
+				do_putmessage();
+				set_object();
+#endif
 #ifdef MSX2
 				game_put();
-#else
+#endif
+#ifdef X68K
 				DEF_SP(spr_count, my_data_x[i], my_data_y[i], my_data_pat_num[i], mypal, PRO_JIKI); /* 0x14); */
 				SEARCH_LIST2(MAX_MYSHOT, i, j, myshot_next){
 					DEF_SP(spr_count, myshot_x[i], myshot_y[i], myshot_pat_num[i],  CHRPAL_NO, PRO_JIKISHOT);
@@ -1393,12 +1424,24 @@ short game_loop(void){
 				}
 #endif
 			do{
+#ifdef TOWNS
+				wait_sprite();
+				set_sprite();
+				wait_vsync();
+#else
 				wait_vsync();
 				set_sprite();
+#endif
 			}while((keyscan() & (KEY_START | KEY_B)));
 			do {
+#ifdef TOWNS
+				wait_sprite();
+				set_sprite();
+				wait_vsync();
+#else
 				wait_vsync();
 				set_sprite();
+#endif
 //				keycode = key_hit_check();
 				keycode = keyscan();
 				if(keycode & KEY_A){
@@ -1417,12 +1460,19 @@ short game_loop(void){
 //				}
 			}while((!(keyscan() & (KEY_START | KEY_B))));
 			do{
+#ifdef TOWNS
+				wait_sprite();
+				set_sprite();
+				wait_vsync();
+#else
 				wait_vsync();
 				set_sprite();
+#endif
 			}while(keyscan() & (KEY_START | KEY_B));
 			scrl_spd = SCRL_MIN;
+#ifndef TOWNS
 			put_strings(SCREEN2, 14, 13, "     ", CHRPAL_NO);
-
+#endif
 			return ERRLV1;
 //			continue;
 		}
