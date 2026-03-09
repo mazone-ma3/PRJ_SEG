@@ -746,7 +746,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 		hiscore_display();
 		put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", CHRPAL_NO);
 		put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 23, "       j k   ", CHRPAL_NO);
+		put_strings(SCREEN2, 9, 23, "      i  k   ", CHRPAL_NO);
 		put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", CHRPAL_NO);
 
 		pal_all(CHRPAL_NO, org_pal);

@@ -941,7 +941,7 @@ class App:
 	def put_title(self):
 #		self.put_strings(9, 14, "START")
 #		self.put_strings(7, 14, "EXIT")
-#		self.put_strings(4, 10, "       j k   ")
+#		self.put_strings(4, 10, "      i  k   ")
 #		self.put_strings(3, 10, "a2026 bcdefgh")
 #		self.score_displayall()
 		self.hiscore_display()
@@ -1454,7 +1454,7 @@ class App:
 
 				self.put_strings(8, 4, "PROJECT SEGRETA");
 				self.put_strings(9, 14, "PUSH A BUTTON");
-				self.put_strings(9, 23, "       j k   ");
+				self.put_strings(9, 23, "      i  k   ");
 				self.put_strings(9, 24, " 2026 bcdefgh");
 
 
