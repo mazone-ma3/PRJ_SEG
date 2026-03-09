@@ -2593,7 +2593,7 @@ __endasm;
 	*bdrclr = bdrclr_old;
 	set_screencolor();
 
-	write_VDP(6, 0x0);
+	write_VDP(20, 0x0);
 	set_screenmode(*oldscr);
 
 	*clicksw = clicksw_old;
