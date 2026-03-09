@@ -1,5 +1,7 @@
 /* Project Segreta ゲ－ム本体 for MSX2 */
 
+#include <string.h>
+
 #define MAIN
 //#define MSX2
 
@@ -467,7 +469,6 @@ unsigned char org_pal[MAXCOLOR][3] = {
 
 volatile FILE *stream[2];
 
-
 /* MSX BLOADデータをファイルからメモリに読み込む */
 short msxload(char *loadfil, unsigned short offset)
 {
@@ -476,7 +477,8 @@ short msxload(char *loadfil, unsigned short offset)
 	unsigned char buffer[2];
 
 	if ((stream[0] = fopen( loadfil, "rb")) == NULL) {
-//		printf("Can\'t open file %s.", loadfil);
+		printf("Can\'t open file %s.", loadfil);
+		getchar();
 		return ERROR;
 	}
 
@@ -496,8 +498,66 @@ short msxload(char *loadfil, unsigned short offset)
 
 unsigned char bgmmode = 0;
 
+char read_slot(unsigned char slot, unsigned short adr) __sdcccall(1)
+{
+__asm
+;	push	ix
+	push	bc
+	push	de
+	push	de
+	pop	hl
+	call	#0x000c	; RDSLT
+	pop	de
+	pop	bc
+;	pop	ix
+__endasm;
+}
+
+void enable_opll(unsigned char slot) __sdcccall(1)
+{
+__asm
+	push	iy
+	push	ix
+	push	bc
+	push	de
+	push	hl
+	ld	hl,#08000h
+	ld	d,a
+	ld	e,0
+	push	de
+	pop	iy
+	ld ix,#0x04113	; INIOPL
+
+	call	#0x001c	; CALSLT
+	pop	hl
+	pop	de
+	pop	bc
+	pop	ix
+	pop	iy
+__endasm;
+}
+
+enum {
+	WORK_NO,
+	WORK_LOOP,
+	WORK_NOISE,
+	WORK_MIX,
+	WORK_TONE,
+	WORK_PART,
+	WORK_SLOT
+};
+
+#define exptbl_pointer ((volatile unsigned char *)0xfcc1)
+char slot_chr[5];
+//unsigned char i, j, k, l;
+unsigned char opll_mode = 0, cpu, opll_slot = 0;
+unsigned char *mem;
+
 char checkbgm(void) __sdcccall(1)
 {
+	int no = 0;
+	int noise = 1; //0x38
+/*
 __asm
 	ld	hl,_checkbgm
 	ld	a,0x80
@@ -540,29 +600,152 @@ bgmerr2:
 
 bgmon:
 __endasm;
+*/
+
 //	if(msxload("psgtone.dat", 0x2000*1) == ERROR)
 //		return 0;
 
-	if(msxload("NOTITLE.PLY", 0x2000*1) == ERROR)
+/*	if(msxload("NOTITLE.PLY", 0x2000*1) == ERROR)
 		return 0;
 
 	if(msxload("PSGMSXD.MSX", 0) == ERROR)
 		return 0;
+*/
 
-	return 1;
+/*	if (argc < 2){
+		printf("FM+PSGMSX Loader.\n");
+		return ERROR;
+	}
+	if (argc >= 3){ //argv[2] != NULL){
+		no = atoi(argv[2]);
+		if((no % 256) > 9)
+			no = 0;*/
+/*		else{
+			printf("no: %d\n",no);
+			getch();
+		}
+*/	//}
+
+/*	if (argc >= 4){ //argv[2] != NULL){
+		noise = atoi(argv[3]);
+		if(!noise)
+			noise = 1;
+//		if(noise > 255)
+//			noise = 0xc8;*/
+/*		else{
+			printf("no: %d\n",no);
+			getch();
+		}
+*/	//}
+
+	if(msxload("PSGTONE.DAT", 0x2200*1) == ERROR)
+		return 0;
+
+	if(msxload("KEYMSX.MSX", 0x2100*1) == ERROR)
+		return 0;
+
+	if(msxload("FMDMSX2.MSX", 0) == ERROR)
+		return 0;
+
+	if(msxload("BGM.PD2", 0x2100*1) == ERROR)
+		return 0;
+
+
+	mem =(unsigned char *)0xbb09;
+	mem[WORK_NO] = no % 256;
+	mem[WORK_LOOP] = no / 256;
+//	mem[WORK_MIX] = noise;
+	mem[WORK_TONE] = noise % 256;
+	if(noise / 256)
+		mem[WORK_PART] = 12;
+	else
+		mem[WORK_PART] = 6;
 
 __asm
+	DI
 __endasm;
-	return 0;
+	for(i = 0; i < 4; ++i){
+		if(!exptbl_pointer[i]){
+			printf("%d basic slot. \n", i);
+			k = i;
+			slot_chr[4] = '\0';
+			for(l = 0; l < 4; ++l){
+				slot_chr[l] = read_slot(k, 0x401c + l);
+			}
+			if(!strcmp(slot_chr, "OPLL")){
+				printf("found ");
+				for(l = 0; l < 4; ++l){
+					slot_chr[l] = read_slot(k, 0x4018 + l);
+				}
+				if(!strcmp(slot_chr, "APRL")){
+					printf("internal ");
+					opll_mode = 1;
+					opll_slot = k;
+				}else{
+					printf("external ");
+					if(!opll_mode){
+						opll_mode = 2;
+						opll_slot = k;
+					}
+				}
+				printf("OPLL basic slot %d \n", i);
+			}
+		}else{
+			printf("%d expand slot. \n", i);
+			for(j = 0; j < 4; ++j){
+				k = j * 4 + i | 0x80;
+				slot_chr[4] = '\0';
+				for(l = 0; l < 4; ++l){
+					slot_chr[l] = read_slot(k, 0x401c + l);
+				}
+				if(!strcmp(slot_chr, "OPLL")){
+					printf("found ");
+					for(l = 0; l < 4; ++l){
+						slot_chr[l] = read_slot(k, 0x4018 + l);
+					}
+					if(!strcmp(slot_chr, "APRL")){
+						printf("internal ");
+						opll_mode = 1;
+						opll_slot = k;
+					}else{
+						printf("external ");
+						if(!opll_mode){
+							opll_mode = 2;
+							opll_slot = k;
+						}
+					}
+					printf("OPLL expand slot %d - %d \n", i, j);
+				}
+			}
+		}
+	}
+	if(!opll_mode){
+		printf("OPLL not found.\n");
+		mem[WORK_SLOT] = 0xff;
+	}else if(opll_mode == 1){
+		enable_opll(opll_slot);
+		mem[WORK_SLOT] = opll_slot;
+	}else if(opll_mode == 2){
+		enable_opll(opll_slot);
+		printf("OPLL ON");
+		mem[WORK_SLOT] = opll_slot;
+	}
+__asm
+	EI
+__endasm;
+
+	return 1;
 }
 
-void play_bgm(unsigned char mode) __sdcccall(1)
+/*void play_bgm(unsigned char mode) __sdcccall(1)
 {
 __asm
 	ld	(#0xf7f8),a
 	call	#0xdc00
 __endasm;
-}
+}*/
+
+#define exptbl_pointer ((volatile unsigned char *)0xfcc1)
 
 void playbgm(void) __sdcccall(1)
 {
@@ -572,11 +755,13 @@ void playbgm(void) __sdcccall(1)
 		return;
 	if(bgmmode == 1){
 __asm
-	call #0xbc00
+;	call #0xbc00
+	call #0xbb00
 __endasm;
-	}else if(bgmmode == 2){
-		play_bgm(0);
 	}
+/*	else if(bgmmode == 2){
+		play_bgm(0);
+	}*/
 }
 
 void stopbgm(void) __sdcccall(1)
@@ -587,11 +772,12 @@ void stopbgm(void) __sdcccall(1)
 		return;
 	if(bgmmode == 1){
 __asm
-	call #0xbc03
+	call #0xbb03
 __endasm;
-	}else if(bgmmode == 2){
-		play_bgm(-1);
 	}
+/*	else if(bgmmode == 2){
+		play_bgm(-1);
+	}*/
 }
 
 void set_vol(unsigned char vol) __sdcccall(1)
@@ -2020,6 +2206,9 @@ unsigned char forclr_old, bakclr_old, bdrclr_old, clicksw_old;
 
 void main(void)
 {
+	bgmmode = checkbgm();
+//	getchar();
+
 	VDP_readadr = read_mainrom(0x0006);
 	VDP_writeadr = read_mainrom(0x0007);
 
@@ -2034,9 +2223,6 @@ void main(void)
 
 	clicksw_old = *clicksw;
 	*clicksw = 0;
-
-	bgmmode = checkbgm();
-//	getchar();
 
 	set_screenmode(5);
 	set_displaypage(0);
@@ -2360,13 +2546,13 @@ end:
 				switch(bgmmode){ //checkbgm()){
 					case 1:
 __asm
-	call #0xbc06
+	call #0xbb06
 __endasm;
 					break;
 
-					case 2:
+/*					case 2:
 						play_bgm(-2);
-						break;
+						break;*/
 				}
 				for(k = 0; k < 16 * 8; k++){
 					game_put();
