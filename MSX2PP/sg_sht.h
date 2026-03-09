@@ -61,7 +61,7 @@ enum {
 	TKD_SIZE_Y = 4,
 
 	/* 表示制限数 */
-	MAX_MYSHOT = 2, //1, //12, //8, //6,
+	MAX_MYSHOT = 4, //2, //1, //12, //8, //6,
 	MAX_TEKI = 8, //8,
 
 	/* 表示先頭プレーンNo. 固定 */
@@ -70,7 +70,7 @@ enum {
 	TKSHOT_OFFSET = TEKI_OFFSET + MAX_TEKI * 2, // * 2,
 
 	/* 敵弾表示制限数 */
-	MAX_TKSHOT = 8 //8 //4 //MAX_SPRITE - TKSHOT_OFFSET
+	MAX_TKSHOT = MAX_SPRITE - TKSHOT_OFFSET //8 //4
 
 };
 
