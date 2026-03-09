@@ -5,9 +5,11 @@ TARGET   = PRJ_SEG
 CC       = zcc
 
 # コンパイルオプション（SDCCを使用）
-CFLAGS   = +msx -compiler sdcc --opt-code-speed --sdcccall0
+#CFLAGS   = +msx -compiler sdcc --opt-code-speed --sdcccall0
+CFLAGS   = +cpm -compiler sdcc --opt-code-size --sdcccall0
 # リンクオプション（subtypeで切り替え）
-LDFLAGS  = +msx -create-app -lmsxbios
+#LDFLAGS  = +msx -create-app -lmsxbios
+LDFLAGS = +cpm -create-app
 
 # 中間ファイル
 OBJS     = $(TARGET).o
@@ -22,7 +24,8 @@ all: $(TARGET).com
 
 # 2. DOS用COM生成ルール
 $(TARGET).com: $(OBJS)
-	$(CC) $(LDFLAGS) -subtype=msxdos -lndos -o $(TARGET).com $(OBJS)
+#	$(CC) $(LDFLAGS) -subtype=msxdos -lndos -o $(TARGET).com $(OBJS)
+	$(CC) $(LDFLAGS) -o $(TARGET).com $(OBJS)
 
 # 3. (おまけ) ROMファイルやBINも作りたい場合
 #rom: $(OBJS)
