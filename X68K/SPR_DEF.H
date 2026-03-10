@@ -76,7 +76,7 @@ CONST SPR_COMB tkshot1_comb[] = {
 
 CONST SPR_COMB tkshot2_comb[] = {
 //	{  IMG_SET(4, 1), 0, 0,0,},
-	{  IMG_SET(0, 2), 0, 0,0,},
+	{  IMG_SET(0, 2), -4, 2,0,},
 };
 
 CONST SPR_COMB tkshot3_comb[] = {

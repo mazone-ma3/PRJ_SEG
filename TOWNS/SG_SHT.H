@@ -31,9 +31,9 @@ enum {
 	JIKI_INIT_Y = ((7 * 8 + 4 - SPR_OFS_Y) << SHIFT_NUM),
 
 	JIKI_MAX_X = (SPR_MAX_X - ((16) << SHIFT_NUM)),	/* 自機移動範囲 */
-	JIKI_MAX_Y = ((18 * 8) << SHIFT_NUM), //(SPR_MAX_Y - (16 << SHIFT_NUM)),
+	JIKI_MAX_Y = (SPR_MAX_Y - (16 << SHIFT_NUM)),//((18 * 8) << SHIFT_NUM), //
 
-	JIKI_MIN_X = (SPR_MIN_X + 8),
+	JIKI_MIN_X = (SPR_MIN_X), // + 8),
 	JIKI_MIN_Y = ((16 * 2) << SHIFT_NUM), //(SPR_MIN_Y),
 
 	/* 当たり判定情報 オフセットとサイズ */
@@ -43,12 +43,25 @@ enum {
 	MY_SIZE_X = 1,
 	MY_SIZE_Y = 1,
 
+	MYSHOT_OFS_X = 0,
+	MYSHOT_OFS_Y = 0,
+
+	MYSHOT_SIZE_X = 16,
+	MYSHOT_SIZE_Y = 4,
+
 
 	TK_OFS_X = 0,
 	TK_OFS_Y = 0,
 
 	TK_SIZE_X = 16,
 	TK_SIZE_Y = 16,
+
+
+	BOSS_OFS_X = -24,
+	BOSS_OFS_Y = -16,
+
+	BOSS_SIZE_X = 16 * 4,
+	BOSS_SIZE_Y = 16 * 3,
 
 
 	TKD_OFS_X = 2,
@@ -68,7 +81,6 @@ enum {
 
 	/* 敵弾表示制限数 */
 	MAX_TKSHOT = MAX_SPRITE - TKSHOT_OFFSET
-//	MAX_TKSHOT = 180 - TKSHOT_OFFSET
 
 };
 
@@ -81,6 +93,13 @@ enum {
 	((head_y - MY_OFS_Y - MY_SIZE_Y) << SHIFT_NUM),\
 }
 
+#define CLGN_D(head_x, head_y, size_x, size_y) {\
+	((head_x - MYSHOT_OFS_X + size_x   ) << SHIFT_NUM),\
+	((head_x - MYSHOT_OFS_X - MYSHOT_SIZE_X) << SHIFT_NUM),\
+	((head_y - MYSHOT_OFS_Y + size_y   ) << SHIFT_NUM),\
+	((head_y - MYSHOT_OFS_Y - MYSHOT_SIZE_Y) << SHIFT_NUM),\
+}
+
 typedef struct {
 	int x1;
 	int x2;
@@ -90,9 +109,13 @@ typedef struct {
 
 COLIGION hantei[2] = {
 	CLGN(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
-	CLGN(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
+	CLGN(BOSS_OFS_X, BOSS_OFS_Y, BOSS_SIZE_X, BOSS_SIZE_Y),
 };
 
+COLIGION hantei_d[2] = {
+	CLGN_D(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
+	CLGN_D(BOSS_OFS_X, BOSS_OFS_Y, BOSS_SIZE_X, BOSS_SIZE_Y),
+};
 
 #include "spr_def.h"
 

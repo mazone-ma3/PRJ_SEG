@@ -442,6 +442,9 @@ void set_object(void)
 void init_star(void)
 {
 	int i;
+
+	return;
+
 /* スタ－の座標系を初期化 */
 	for(i = 0;i < STAR_NUM; i++){
 		star[0][i] = (rand() % 256) * 2;
@@ -470,7 +473,7 @@ void bg_roll(void)
 {
 	int i;
 
-//	return;
+	return;
 
 /* スクロ－ルレジスタ制御 */
 /*	outportb(0x440,17);

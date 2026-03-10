@@ -33,8 +33,11 @@ enum {
 	JIKI_INIT_X = ((2 * 8     - SPR_OFS_X) << SHIFT_NUM),	/* 初期表示位置 */
 	JIKI_INIT_Y = ((7 * 8 + 4 - SPR_OFS_Y) << SHIFT_NUM_Y),
 
-	JIKI_MAX_X = ((SCREEN_MAX_X) << SHIFT_NUM),	/* 自機移動範囲 */
-	JIKI_MAX_Y = ((18 * 8 - SPR_OFS_Y - 16) << SHIFT_NUM_Y),
+//	JIKI_MAX_X = ((SCREEN_MAX_X) << SHIFT_NUM),	/* 自機移動範囲 */
+//	JIKI_MAX_Y = ((18 * 8 - SPR_OFS_Y - 16) << SHIFT_NUM_Y),
+
+	JIKI_MAX_X = (SPR_MAX_X - ((16) << SHIFT_NUM)),	/* 自機移動範囲 */
+	JIKI_MAX_Y = (SPR_MAX_Y - (16 << SHIFT_NUM)),//((18 * 8) << SHIFT_NUM), //
 
 	JIKI_MIN_X = (SPR_MIN_X),
 	JIKI_MIN_Y = (SPR_MIN_Y),
@@ -46,12 +49,25 @@ enum {
 	MY_SIZE_X = 1,
 	MY_SIZE_Y = 1,
 
+	MYSHOT_OFS_X = 0,
+	MYSHOT_OFS_Y = 0,
+
+	MYSHOT_SIZE_X = 16,
+	MYSHOT_SIZE_Y = 4,
+
 
 	TK_OFS_X = 0,
 	TK_OFS_Y = 0,
 
 	TK_SIZE_X = 16,
 	TK_SIZE_Y = 16,
+
+	BOSS_OFS_X = -24,
+	BOSS_OFS_Y = -16,
+
+
+	BOSS_SIZE_X = 16 * 4,
+	BOSS_SIZE_Y = 16 * 3,
 
 
 	TKD_OFS_X = 2,
@@ -83,6 +99,13 @@ enum {
 	((head_y - MY_OFS_Y - MY_SIZE_Y) << SHIFT_NUM_Y),\
 }
 
+#define CLGN_D(head_x, head_y, size_x, size_y) {\
+	((head_x - MYSHOT_OFS_X + size_x   ) << SHIFT_NUM),\
+	((head_x - MYSHOT_OFS_X - MYSHOT_SIZE_X) << SHIFT_NUM),\
+	((head_y - MYSHOT_OFS_Y + size_y   ) << SHIFT_NUM),\
+	((head_y - MYSHOT_OFS_Y - MYSHOT_SIZE_Y) << SHIFT_NUM),\
+}
+
 typedef struct {
 	int x1;
 	int x2;
@@ -95,6 +118,10 @@ COLIGION hantei[2] = {
 	CLGN(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
 };
 
+COLIGION hantei_d[2] = {
+	CLGN_D(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
+	CLGN_D(BOSS_OFS_X, BOSS_OFS_Y, BOSS_SIZE_X, BOSS_SIZE_Y),
+};
 
 #include "spr_def.h"
 

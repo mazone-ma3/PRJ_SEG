@@ -1038,17 +1038,23 @@ void move_teki(void)
 
 		if(teki_hp[i] > 2){
 //			if(hit_check == TRUE){
+				if(teki_pat[i] == PAT_BOSS1)
+					p_coli = &hantei_d[1];
+				else
+					p_coli = &hantei_d[0];
 
 				/* 敵機と自機弾の接触判定 → 敵機、自機弾消滅 スコア増加 */
 				SEARCH_LIST2(MAX_MYSHOT, j, j2, myshot_next){
-//					if((tmp_yy = myshot[j].y - tmp_x) < (16 << SHIFT_NUM_Y)){
-//						if(tmp_yy > ((TK_OFS_Y - MY_OFS_Y - 8) << SHIFT_NUM_Y)){
-					if((tmp_xx = myshot_x[j] - tmp_x) < (16 << SHIFT_NUM)){
-//						if(tmp_xx > (-20 << SHIFT_NUM)){
+/*					if((tmp_xx = myshot_x[j] - tmp_x) < (16 << SHIFT_NUM)){
 						if(tmp_xx > (-(4 << SHIFT_NUM))){
 							if((tmp_yy = myshot_y[j] - tmp_y) < (16 << SHIFT_NUM_Y)){
-//								if(tmp_yy > (-20 << SHIFT_NUM_Y)){
 								if(tmp_yy > (-(4 << SHIFT_NUM_Y))){
+*/
+					if((tmp_xx = myshot_x[j] - tmp_x) < p_coli->x1){
+						if(tmp_xx > p_coli->x2){
+							if((tmp_yy = myshot_y[j] - tmp_y) < p_coli->y1){
+								if(tmp_yy > p_coli->y2){
+
 									if(myshot_y[j] != SPR_DEL_Y){
 
 										if(teki_pat[i] != PAT_STAR1){
@@ -1090,7 +1096,11 @@ void move_teki(void)
 		if(teki_hp[i] > 2){
 //			if(hit_check == TRUE){
 				/* 敵機と自機の接触判定 → 自機ダメージ */
-				p_coli = &hantei[0];
+				if(teki_pat[i] == PAT_BOSS1)
+					p_coli = &hantei[1];
+				else
+					p_coli = &hantei[0];
+//				p_coli = &hantei[0];
 				if((tmp_xx = my_data_x[0] - tmp_x) < p_coli->x1){
 					if(tmp_xx > p_coli->x2){
 						if((tmp_yy = my_data_y[0] - tmp_y) < p_coli->y1){

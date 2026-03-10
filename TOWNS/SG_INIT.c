@@ -434,7 +434,7 @@ int	main(int argc,char **argv){
 		wait_vsync2();
 		pal_allblack(BGPAL_NO);
 		pal_allblack(CHRPAL_NO);
-		paint(0x0);
+		paint(0x2222);
 		init_star();
 		pal_all(BGPAL_NO, org_pal);
 
