@@ -75,7 +75,7 @@ void put_my_hp_dmg(void)
 		str_temp[j++] = '`';
 	str_temp[j] = '\0';
 
-	put_strings(SCREEN2, 13, 24, str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 13-8, 25, str_temp, CHRPAL_NO);
 
 	my_hp_flag = TRUE;
 }
@@ -424,8 +424,23 @@ __endasm;*/
 }
 #endif
 
-#define HMMM 0xD0
-#define LMMM 0x90
+enum {
+	HMMM = 0xD0,
+	HMMV = 0xC0,
+	LMMM = 0x90,
+
+	R_IMP  = 0x00,
+	R_AND  = 0x01,
+	R_OR   = 0x02,
+	R_EOR  = 0x03,
+	R_NOT  = 0x04,
+
+	R_TIMP = 0x08,
+	R_TAND  = 0x01,
+	R_TOR   = 0x02,
+	R_TEOR  = 0x03,
+	R_TNOT  = 0x04
+};
 
 enum {
 	VDP_READDATA = 0,
@@ -1101,7 +1116,7 @@ void boxfill(int dx, int dy, int nx, int ny, unsigned char dix, unsigned char di
 	outp(port, (ny >> 8) & 0x03);
 	outp(port, data);
 	outp(port, ((diy << 3) & 0x80) | ((diy << 2) & 0x40));
-	outp(port, 0xc0);
+	outp(port, HMMV);
 
 	wait_VDP();
 
@@ -1387,7 +1402,7 @@ __endasm;
 /*	++total_count;
 	if(*jiffy >= 60){
 		put_numd((long)(total_count), 2);
-		put_strings(SCREEN2, 28, 22, str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 28, 0, str_temp, CHRPAL_NO);
 		total_count = 0;
 		*jiffy = 0;
 	}*/
@@ -1399,7 +1414,7 @@ __endasm;
 //	if(*jiffy >= 60){
 		old_jiffy2 = *jiffy;
 		put_numd((long)(total_count), 2);
-		put_strings(SCREEN2, 27, 22, str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 27, 0, str_temp, CHRPAL_NO);
 		total_count = 0;
 //		*jiffy = 0;
 	}
@@ -1440,7 +1455,7 @@ __endasm;
 		old_jiffy2 = *jiffy;
 		EI();
 		put_numd((long)(total_count), 2);
-		put_strings(SCREEN2, 27, 22, str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 27, 0, str_temp, CHRPAL_NO);
 		total_count = 0;
 //		*jiffy = 0;
 	}
@@ -1580,8 +1595,16 @@ void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str
 	XSIZA = 0;
 	YSIZE = 8;
 	APAGE = 2; //map_page;
-	VPAGE = 0;
-	VDPcommand = HMMM;
+	if(scr == SCREEN2)
+		VPAGE = 0;
+	else
+		VPAGE = 3;
+
+	if(pal == CHRPAL_NO)
+		VDPcommand = HMMM;
+	else{
+		VDPcommand = LMMM | R_TIMP;
+	}
 
 	while(1){
 		chr = *(str++);
@@ -1590,8 +1613,15 @@ void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str
 		if((chr < 0x30))
 			chr = 0x40;
 		chr -= '0';
-		sx = (chr & 0x0f) * 8;
-		sy = (chr / 16) * 8;
+		if((chr == (0x40 - '0')) && (pal == CHRPAL_NO)){
+			sx = 9 * 16;
+			sy = 0;
+			APAGE = 3;
+		}else{
+			sx = (chr & 0x0f) * 8;
+			sy = (chr / 16) * 8;
+			APAGE = 2;
+		}
 		dx = x * 8;
 		dy = y * 8;
 		VDPsetAREA2();
@@ -1614,14 +1644,14 @@ void put_numd(long j, unsigned char digit) __sdcccall(1)
 void score_display(void)
 {
 	put_numd(score, 8);
-	put_strings(SCREEN2, 15, 22 , str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 15-8, 0 , str_temp, CHRPAL_NO);
 	if(score >= hiscore){
 		if((score % 10) == 0){
 			hiscore = score;
-			put_strings(SCREEN2, 8, 22, "HIGH ", CHRPAL_NO);
+			put_strings(SCREEN2, 0, 0, "HIGH ", CHRPAL_NO);
 		}
 	}else
-		put_strings(SCREEN2, 8, 22, "SCORE", CHRPAL_NO);
+		put_strings(SCREEN2, 0, 0, "SCORE", CHRPAL_NO);
 }
 
 void score_displayall(void)
@@ -1638,8 +1668,8 @@ void hiscore_display(void)
 
 	put_numd(hiscore, 8);
 
-	put_strings(SCREEN2, 9, 12, "HIGH", CHRPAL_NO);
-	put_strings(SCREEN2, 9 + 5, 12, str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 9, 12, "HIGH", REVPAL_NO);
+	put_strings(SCREEN2, 9 + 5, 12, str_temp, REVPAL_NO);
 }
 
 unsigned char st0, st1, pd0, pd1, pd2, k3, k5, k7, k9, k10;
@@ -2065,16 +2095,33 @@ spr_end:
 
 void set_se(void)
 {
-	if(seflag == 1){
-		seflag = 0;
-		DI();
-		write_psg(6,127);
-		write_psg(11,0);
-		write_psg(12,15);
-		write_psg(7,0x9c);  // 10011100
-		write_psg(13,9);
-		write_psg(10,0x10);
-		EI();
+	switch(seflag){
+		case 1:
+			seflag = 0;
+			DI();
+			write_psg(6,127);
+			write_psg(11,0);
+			write_psg(12,15);
+			write_psg(7,0x9c);  // 10011100
+			write_psg(13,9);
+			write_psg(10,0x10);
+			EI();
+			break;
+
+		case 4:
+			seflag = 0;
+			DI();
+			write_psg(4, 55);
+			write_psg(5, 0);
+			write_psg(6,127);
+			write_psg(11,0);
+			write_psg(12,15);
+			write_psg(7,0xb8);  // 10111000
+			write_psg(13,9);
+			write_psg(10,0x10);
+			EI();
+			break;
+
 //		if(soundflag == TRUE)
 //			if(se_check())
 //				se_stop();
@@ -2240,7 +2287,7 @@ void main(void)
 		pal_set(1, i, 31, 0, 0);
 
 	spr_on();
-	boxfill(0, 256, 256, 212, 0, 0, 0x00);
+//	boxfill(0, 256, 256, 212, 0, 0, 0x00);
 
 //	spr_page = 0;
 //	spr_count[0] = spr_count[1] = 0;
@@ -2254,6 +2301,19 @@ void main(void)
 		wait_vsync();
 //		pal_allblack(CHRPAL_NO);
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
+
+		sx = 0;
+		sy = 0; // + 512;
+		dx = 0;
+		dy = 0;
+		XSIZE = 256;
+		XSIZA = 0;
+		YSIZE = 212;
+		APAGE = 1; //map_page;
+		VPAGE = 0;
+		VDPcommand = HMMM;
+		VDPsetAREA2();
+		wait_VDP();
 
 /*		sx = 0;
 		sy = 0; // + 512;
@@ -2273,9 +2333,10 @@ void main(void)
 		wait_vsync();
 
 		hiscore_display();
-		put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 17, "      i  k   ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 18, " 2026 bcdefgh", CHRPAL_NO);
+		put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", REVPAL_NO);
+		put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", REVPAL_NO);
+		put_strings(SCREEN2, 9, 23, "      i  k   ", REVPAL_NO);
+		put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", REVPAL_NO);
 		DI();
 		pal_all(CHRPAL_NO, org_pal);
 		EI();
@@ -2294,10 +2355,13 @@ void main(void)
 			keyscan();
 		}while(keycode & (KEY_A | KEY_START));
 
-		put_strings(SCREEN2, 9, 14, "             ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 12, "             ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 17, "             ", CHRPAL_NO);
-		put_strings(SCREEN2, 9, 18, "             ", CHRPAL_NO);
+/*		put_strings(SCREEN2, 8, 4, "               ", REVRPAL_NO);
+		put_strings(SCREEN2, 9, 14, "             ", REVPAL_NO);
+		put_strings(SCREEN2, 9, 12, "             ", REVPAL_NO);
+		put_strings(SCREEN2, 9, 23, "             ", REVPAL_NO);
+		put_strings(SCREEN2, 9, 24, "             ", REVPAL_NO);
+*/
+		boxfill(0, 0, 256, 212, 0, 0, 0x00);
 
 		if((errlv == SYSERR) || (errlv == SYSEXIT))
 			break;
@@ -2314,18 +2378,21 @@ void main(void)
 		}else if(errlv >= ERRLV1)
 */		{
 
-			sx = 0;
-			sy = 3 * 16;
-			dy = 18 * 8;
+			sx = 9 * 16;
+			sy = 0 * 16;
+//			dy = 18 * 8;
 			XSIZE = 16;
 			XSIZA = 0;
-			YSIZE = 16;
-			APAGE = 2;
+			YSIZE = 8;
+			APAGE = 3;
 			VPAGE = 0;
 			VDPcommand = HMMM;
-			for(i = 0; i < 16; ++i){
-				dx = i * 16;
-				VDPsetAREA2();
+			for(j = 0; j < 26; ++j){
+				for(i = 0; i < 16; ++i){
+					dx = i * 16;
+					dy = j * 8;
+					VDPsetAREA2();
+				}
 			}
 			wait_VDP();
 
@@ -2355,12 +2422,12 @@ void main(void)
 					break;
 			}
 */
-			put_strings(SCREEN2, 8, 24, "LIFE", CHRPAL_NO);
+			put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
 #ifdef DEBUG
-			put_strings(SCREEN2, 29, 22, "FPS", CHRPAL_NO);
+			put_strings(SCREEN2, 29, 0, "FPS", CHRPAL_NO);
 #endif
 #ifdef DEBUG_
-			put_strings(SCREEN2, 29, 24, "SPR", CHRPAL_NO);
+			put_strings(SCREEN2, 29, 25, "SPR", CHRPAL_NO);
 #endif
 			score_displayall();
 			put_my_hp_dmg();
