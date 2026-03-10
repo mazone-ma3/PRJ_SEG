@@ -215,6 +215,10 @@ class Enemy:
 	def __init__(self, enemies, x, y, player_x, player_y, hp, type, chr, speed, dir, shotinfo, shot_c):
 		self.x = x
 		self.y = y
+		self.ofs_x = 0
+		self.ofs_y = 0
+		self.w = 16
+		self.h = 16
 		self.speed = speed
 		self.tkshotcount = SHOTCOUNT - 2
 		self.hp = hp
@@ -234,6 +238,10 @@ class Enemy:
 			pat = 2
 		elif(type == "PAT_BOSS1"):
 			pat = 0
+			self.w = 16 * 4
+			self.h = 16 * 3
+			self.ofs_x = -24
+			self.ofs_y = -16
 		else:
 			pat = 0
 
@@ -1269,10 +1277,10 @@ class App:
 				for enemy in self.enemies[:]:
 					if(enemy.hp > 2):
 						for bullet in self.player_bullets[:]:
-							if (enemy.x < bullet.x + bullet.w and
-								enemy.x + 16 > bullet.x and
-									enemy.y < bullet.y + bullet.h and
-									enemy.y + 16 > bullet.y):
+							if (enemy.x + enemy.ofs_x < bullet.x + bullet.w and
+								enemy.x + enemy.ofs_x + enemy.w > bullet.x and
+								enemy.y + enemy.ofs_y < bullet.y + bullet.h and
+								enemy.y + enemy.ofs_y + enemy.h > bullet.y):
 
 								if(enemy.chr != 11):
 									enemy.hp = enemy.hp - 1
@@ -1318,10 +1326,10 @@ class App:
 				if(self.mypal_dmgtime == 0):
 					# 当たり判定（プレイヤーと敵）
 					for enemy in self.enemies[:]:
-						if (enemy.x < self.player_x + 9+1 and
-							enemy.x + 16 > self.player_x+9 and
-							enemy.y < self.player_y + 9+1 and
-							enemy.y + 16 > self.player_y+9):
+						if (enemy.x + enemy.ofs_x < self.player_x + 9+1 and
+							enemy.x + enemy.ofs_x + enemy.w > self.player_x+9 and
+							enemy.y + enemy.ofs_y < self.player_y + 9+1 and
+							enemy.y + enemy.ofs_y + enemy.h > self.player_y+9):
 
 							if(enemy.chr != 11):
 								self.my_dmg = True
