@@ -1430,7 +1430,7 @@ class App:
 		pyxel.cls(2)
 
 		if self.scene == "MESSAGEIN" or self.scene == "MESSAGE" or self.scene == "MESSAGEFADE":
-			self.put_strings(11-4, 14, "PROJECT SEGRETA")
+			self.put_strings(11-2, 14, "PROJECT SEGRETA")
 			self.put_strings(11, 16, "SINCE 2026")
 			self.changepal(self.colorvalue)
 			return
@@ -1446,9 +1446,12 @@ class App:
 		# 一枚絵表示
 		if self.scene == "TITLE" or self.scene == "OPENING" or self.scene == "TITLEFADE" or self.scene == "KEYFRASH":
 			for i in range(0, 256):
-				pyxel.blt(self.sin_table[i + self.tableno], i, 0, 0, i, 256, 1, #		else:
+				pyxel.blt(self.sin_table[i + self.tableno], i, 0, 0, i, 256, 1, 0)
+		else:
+			for j in range(0,32):
+				for i in range(0,32):
+					pyxel.blt(i*8, j*8, 2, 16*9, 0, 8, 8,0)
 #			pyxel.blt(0, 0, 0, 0, 0, 256, 256, 0)
-0)
 
 		if self.scene == "TITLE" or self.scene == "OPENING" or self.scene == "TITLEFADE" or self.scene == "KEYFRASH":
 
