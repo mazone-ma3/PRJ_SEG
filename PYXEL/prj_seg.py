@@ -199,7 +199,7 @@ class EnemyBullet:
 	def draw(self):
 		if(self.chr == 1):
 			# LASER
-			pyxel.blt(self.x-4, self.y, 2, 0, 32, 16, 16, 0)
+			pyxel.blt(self.x-4, self.y+2, 2, 0, 32, 16, 16, 0)
 		else:
 			if(self.dx < 0):
 				pyxel.blt(self.x-4, self.y-4, 2, 16, 32, 16, 16, 0)
