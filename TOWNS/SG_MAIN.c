@@ -121,8 +121,8 @@ void put_my_hp_dmg(void)
 		str_temp[j++] = '`';
 	str_temp[j] = '\0';
 
-	put_strings(SCREEN2, 8, 24, "LIFE", CHRPAL_NO);
-	put_strings(SCREEN2, 13, 24, str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 0, 29, "LIFE", CHRPAL_NO);
+	put_strings(SCREEN2, 13-8, 29, str_temp, CHRPAL_NO);
 
 	my_hp_flag = TRUE;
 }
@@ -171,13 +171,13 @@ void put_numd(long j, char digit)
 void score_display(void)
 {
 	put_numd(score, 8);
-	put_strings(SCREEN2, 15, 22, str_temp, CHRPAL_NO);
+	put_strings(SCREEN2, 15-8, 0, str_temp, CHRPAL_NO);
 	if((score >= hiscore) && ((score % 10) == 0)){
 		hiscore = score;
-		put_strings(SCREEN2, 8, 22, "HIGH", CHRPAL_NO);
+		put_strings(SCREEN2, 0, 0, "HIGH", CHRPAL_NO);
 	}
 	else
-		put_strings(SCREEN2, 8, 22, "SCORE", CHRPAL_NO);
+		put_strings(SCREEN2, 0, 0, "SCORE", CHRPAL_NO);
 }
 
 void score_displayall(void)

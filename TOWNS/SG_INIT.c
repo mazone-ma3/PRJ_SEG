@@ -263,11 +263,33 @@ void paint(unsigned short color)
 	unsigned short i, j;
 
 	_disable();
-	for (i = 0; i < (512); ++i){
-		for (j = 0; j < 512; j+=2){
+	for (i = 256; i < (512); ++i){
+		for (j = 16; j < (160-16); j+=2){
 //			_FP_OFF(vram) = (j + i * 1024 + 32) / 2;
 //			*vram = color;
 			VRAM_putPixelW((j + i * 512 + 32 * 0) / 1, color);
+		}
+	}
+	_enable();
+}
+
+// SPRITEパターンでVRAMを埋める
+void paint2(unsigned short pat)
+{
+	unsigned short i, j, k, l;
+
+	_disable();
+	for (i = 256; i < (512); i += 16){
+		for (j = 16; j < (160-16); j+=8){
+//		for (j = 32; j < (320-32); j+=16){
+
+			spram = 0x4000 + pat * 16*8;
+			for(k = 0; k < 16; ++k){
+				for(l = 0; l < 8; ++l){
+					VRAM_putPixelB(((j+l) + (i+k) * 512 + 32 * 0) / 1, _peek_byte(0x130, spram));
+					spram += 1;
+				}
+			}
 		}
 	}
 	_enable();
@@ -296,6 +318,84 @@ char *SND_load(char *fn, char*SNDBUFF){
 	fclose(fp);
 	
 	return SNDBUFF;
+}
+
+#define WIDTH 32
+#define LINE 240 //212
+
+extern FILE *stream[2];
+longword vram_adr;
+
+int conv(char *loadfil, int x, int y)
+{
+	long i, count, count2;
+	int k=0, l=0, m=0;
+	unsigned char read_pattern[WIDTH * LINE * 2+ 2];
+	unsigned char pattern[10];
+	unsigned short fmtcolor[2]; //[4];
+	unsigned char msxcolor[8];
+
+	if ((stream[0] = fopen( loadfil, "rb")) == NULL) {
+		printf("Can\'t open file %s.", loadfil);
+
+		fclose(stream[0]);
+		return 1;
+	}
+	fread(pattern, 1, 1, stream[0]);	/* MSX先頭を読み捨てる */
+	fread(pattern, 1, 4, stream[0]);	/* MSXヘッダも読み捨てる */
+
+	fread(pattern, 1, 2, stream[0]);	/* MSXヘッダを読み捨てる */
+
+
+	for(count = 0; count < 4; ++count){
+		i = fread(read_pattern, 1, WIDTH * LINE, stream[0]);
+		m = 0;
+//		if(i < 1)
+//			break;
+		for(count2 = 0; count2 < WIDTH * LINE / 2; ++count2){
+	
+
+			/* 色分解 */
+			msxcolor[0] = (read_pattern[m] >>4) & 0x0f;
+			msxcolor[1] = read_pattern[m++] & 0x0f;
+			fmtcolor[0] = msxcolor[0] + msxcolor[1] * 16;
+//			fmtcolor[1] = msxcolor[1];// + msxcolor[1] * 16;
+
+			msxcolor[0] = (read_pattern[m] >>4) & 0x0f;
+			msxcolor[1] = read_pattern[m++] & 0x0f;
+			fmtcolor[1] = msxcolor[0] + msxcolor[1] * 16;
+//			fmtcolor[3] = msxcolor[1];// + msxcolor[1] * 16;
+
+//			_FP_OFF(vram_adr) = k * 2 + l * 2;
+			vram_adr = (k + x / 2) * 1 + (l + y) * 1;
+//			*(vram_adr++) = fmtcolor[0] + fmtcolor[1] * 256;
+//			_poke_word(0x120, vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
+			VRAM_putPixelW(vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
+
+/*			vram_adr += 2;
+//			*vram_adr = fmtcolor[2] + fmtcolor[3] * 256;
+//			_poke_word(0x120, vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
+			VRAM_putPixelW(vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
+//			_FP_OFF(vram_adr) = k * 2 + l * 2 + 256 * 2;
+			vram_adr = k * 2 + l * 2 + 256 * 2;
+//			*(vram_adr++) = fmtcolor[0] + fmtcolor[1] * 256;
+//			_poke_word(0x120, vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
+			VRAM_putPixelW(vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
+			vram_adr += 2;
+//			*vram_adr = fmtcolor[2] + fmtcolor[3] * 256;
+//			_poke_word(0x120, vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
+			VRAM_putPixelW(vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
+*/
+			k += 2;
+			if(k >= (128)){
+				k = 0;
+				l += ((256) * 2);
+			}
+		}
+	}
+	fclose(stream[0]);
+
+	return 0;
 }
 
 int	main(int argc,char **argv){
@@ -414,6 +514,9 @@ int	main(int argc,char **argv){
 //	pal68_load("CORECRA.PAL");
 /*	spsave("CORECRA.PTN", 0x4000);*/
 
+	pal_allblack(BGPAL_NO);
+	conv("title.sc5", 32, 0);
+
 /* 音楽再生 */
 /* 	eup_play(eup_dat, 1); */
 //	MSV_play_start();
@@ -434,7 +537,13 @@ int	main(int argc,char **argv){
 		wait_vsync2();
 		pal_allblack(BGPAL_NO);
 		pal_allblack(CHRPAL_NO);
-		paint(0x2222);
+
+		outportb(0x440,17);
+		outportb(0x442,0 * 128 % 256);
+		outportb(0x443,0 * 128 / 256);
+
+//		paint(0x2222);
+		paint2( FONTPARTS + TITLEPARTS + 9);
 		init_star();
 		pal_all(BGPAL_NO, org_pal);
 
@@ -452,9 +561,10 @@ int	main(int argc,char **argv){
 
 		do{
 			hiscore_display();
+			put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", CHRPAL_NO);
 			put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", CHRPAL_NO);
-			put_strings(SCREEN2, 9, 17, "      i  k   ", CHRPAL_NO);
-			put_strings(SCREEN2, 9, 18, " 2026 bcdefgh", CHRPAL_NO);
+			put_strings(SCREEN2, 9, 23, "      i  k   ", CHRPAL_NO);
+			put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", CHRPAL_NO);
 
 			keycode = keyscan();
 			if((keycode & KEY_B) || (KYB_read( 1, &encode ) == 0x1b) ){
@@ -499,6 +609,10 @@ int	main(int argc,char **argv){
 //			while(MSV_stat_flag());
 //			MSV_play_start();
 			play_fmdbgm();
+
+			outportb(0x440,17);
+			outportb(0x442,256 * 128 % 256);
+			outportb(0x443,256 * 128 / 256);
 
 //			init_chr_data();
 			old_count = MAX_SPRITE;
