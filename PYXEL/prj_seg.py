@@ -214,7 +214,7 @@ class EnemyBullet:
 class Enemy:
 	def __init__(self, enemies, x, y, player_x, player_y, hp, type, chr, speed, dir, shotinfo, shot_c):
 		self.x = x
-		self.y = y+8
+		self.y = y + 16
 		self.ofs_x = 0
 		self.ofs_y = 0
 		self.w = 16
@@ -543,14 +543,14 @@ class Enemy:
 			# 9 BOSS1
 				dir = self.teki_dir
 				self.tkcount += 1
-				if(self.tkcount == (40+4)):
+				if(self.tkcount == (40-4*2)):
 					dir = DIR_RIGHT
-				elif((self.tkcount % 600) == (40+4)):
+				elif((self.tkcount % 600) == (40-4*2)):
 					self.tkshotcount = SHOTCOUNT * 3 / 2
 					dir = DIR_DOWN
-				elif(self.tkcount > 40+4):
+				elif(self.tkcount > 40-4*2):
 					if(dir == DIR_UP):
-						if(tmp_y < (48 - 16)):
+						if(tmp_y < (48 - 8 - 4*1)):
 							dir = DIR_OFF
 							self.tkshotcount = SHOTCOUNT * 3 / 2;
 							self.boss_tkappend("PAT_TEKI4", 6, DIR_DOWN - 4, 0);
