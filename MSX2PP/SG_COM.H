@@ -911,12 +911,12 @@ void move_boss_pat1(void)//(unsigned char i)
 //	int dir;
 	dir = teki_dir[i];
 
-	if(++tkcount[i] == (40 - 4)){
+	if(++tkcount[i] == (40 + 4)){
 		dir = DIR_RIGHT;
-	}else if((tkcount[i] % 600) == (40 - 4)){
+	}else if((tkcount[i] % 600) == (40 + 4)){
 		tkshotcount[i] = SHOTCOUNT * 3 / 2;
 		dir = DIR_DOWN;
-	}else if(tkcount[i] > (40 - 4)){
+	}else if(tkcount[i] > (40 + 4)){
 		switch(dir){
 			case DIR_UP:
 				if(tmp_y < ((64-8) << SHIFT_NUM_Y)){
@@ -935,7 +935,7 @@ void move_boss_pat1(void)//(unsigned char i)
 				break;
 
 			case DIR_DOWN:
-				if(tmp_y > (192 << SHIFT_NUM_Y)){
+				if(tmp_y > ((192) << SHIFT_NUM_Y)){
 					tkshotcount[i] = SHOTCOUNT * 3 / 2;
 					if(tkcount[i] < 3500)
 						dir = DIR_UP;
@@ -943,7 +943,7 @@ void move_boss_pat1(void)//(unsigned char i)
 				break;
 
 			case DIR_LEFT:
-				if(tmp_x < (40 << SHIFT_NUM)){
+				if(tmp_x < ((40) << SHIFT_NUM)){
 					dir = DIR_RIGHT;
 				}
 				break;
@@ -956,7 +956,7 @@ void move_boss_pat1(void)//(unsigned char i)
 		}
 	}
 	/* “G‹@‰æ–ÊŠOÁ‹Ž(‰º•ûŒü) */
-	if(tmp_y > (SPR_MAX_Y))
+	if(tmp_y > (SPR_MAX_Y + (16 << SHIFT_NUM_Y)))
 		teki_hp[i] = 0;
 
 	tmp_x +=  (direction[dir][0]);

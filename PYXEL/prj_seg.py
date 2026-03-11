@@ -214,7 +214,7 @@ class EnemyBullet:
 class Enemy:
 	def __init__(self, enemies, x, y, player_x, player_y, hp, type, chr, speed, dir, shotinfo, shot_c):
 		self.x = x
-		self.y = y
+		self.y = y+8
 		self.ofs_x = 0
 		self.ofs_y = 0
 		self.w = 16
@@ -562,7 +562,7 @@ class Enemy:
 							dir = DIR_LEFT
 
 					elif(dir == DIR_DOWN):
-						if(tmp_y > ((192+16))):
+						if(tmp_y > ((192-16))):
 							self.tkshotcount = SHOTCOUNT * 3 / 2
 							if(self.tkcount < 3500):
 #								print(f"{self.tkcount}")
@@ -577,7 +577,7 @@ class Enemy:
 							dir = DIR_LEFT
 
 				#/* 敵機画面外消去(下方向) */
-				if(tmp_y > 256+8):
+				if(tmp_y > (256+24)):
 					self.hp = 0
 
 				tmp_x +=  (direction[dir][0]) / (1 << 3)
@@ -1264,8 +1264,8 @@ class App:
 				# 敵の更新
 				for enemy in self.enemies[:]:
 					enemy.update(self.player_x, self.player_y, self.enemy_bullets, self.uramode)
-					if enemy.y > 256:
-						self.enemies.remove(enemy)
+#					if enemy.y > 256:
+#						self.enemies.remove(enemy)
 
 				# 敵の弾更新
 				for bullet in self.enemy_bullets[:]:
