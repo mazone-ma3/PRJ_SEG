@@ -161,7 +161,7 @@ class PlayerBullet:
 	def __init__(self, x, y, muki):
 		self.x = x
 		self.y = y
-		self.w = 4
+		self.w = 16
 		self.h = 4
 		if(muki == PAT_JIKI_L):
 			self.speed = 6
@@ -173,9 +173,9 @@ class PlayerBullet:
 
 	def draw(self):
 		if(self.speed < 0):
-			pyxel.blt(self.x, self.y, 2, 64, 16, 8, 8, 0)
+			pyxel.blt(self.x, self.y, 2, 64, 16, 16, 8, 0)
 		else:
-			pyxel.blt(self.x, self.y, 2, 64, 16, -8, 8, 0)
+			pyxel.blt(self.x, self.y, 2, 64, 16, -16, 8, 0)
 #		pyxel.rect(self.x, self.y, self.w, self.h, 13)
 #		pyxel.rectb(self.x, self.y, self.w, self.h, 0)
 
@@ -277,7 +277,7 @@ class Enemy:
 
 
 
-	def shottome2(self, player_x, player_y, dir, pat, enemy_bullets, uramode):
+	def shottome(self, player_x, player_y, dir, pat, enemy_bullets, uramode):
 #		if(self.tkshotcount != 0):
 #			self.tkshotcount -= 1
 #		else:
@@ -288,11 +288,23 @@ class Enemy:
 		else:
 			dx = direction[dir][0] / (1 << 3)
 			dy = direction[dir][1] / (1 << 3)
-		enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
-		self.tkshotcount = self.shot_c
+		enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, pat))
+#		self.tkshotcount = self.shot_c
+
+
+	def shottome2(self, player_x, player_y, dir, pat, enemy_bullets, uramode):
+#		if(self.tkshotcount != 0):
+#			self.tkshotcount -= 1
+#		else:
+#		dir = tekishot_dir(player_x, player_y, self.x, self.y)
+		dx = direction[dir][0] * 3 / 2 / (1 << 3)
+		dy = direction[dir][1] * 3 / 2 / (1 << 3)
+		enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, pat))
+#		self.tkshotcount = self.shot_c
 
 
 	def check_revshot(self, player_x, player_y, enemy_bullets, uramode):
+#		return
 		dir = tekishot_dir(player_x, player_y, self.x, self.y)
 		if(uramode > 2):
 #			print(f"{uramode}")
@@ -616,14 +628,14 @@ class Enemy:
 			elif(self.dmgtime ==10):
 #				self.pat = 2
 				self.pal = 1
-				if(uramode > 0):
-					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
-			elif(self.dmgtime ==13):
-				if(uramode > 0):
-					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
-			elif(self.dmgtime ==15):
-				if(uramode > 0):
-					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
+#				if(uramode > 0):
+#					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
+#			elif(self.dmgtime ==13):
+#				if(uramode > 0):
+#					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
+#			elif(self.dmgtime ==15):
+#				if(uramode > 0):
+#					self.check_revshot(player_x, player_y, enemy_bullets, uramode)
 				self.hp = 3
 				self.chr = 11
 				self.pat = 3
@@ -650,13 +662,15 @@ class Enemy:
 					self.tkshotcount -= 1
 				else:
 					dir = tekishot_dir(player_x, player_y, self.x, self.y)
-					if(uramode > 1):
-						dx = direction[dir][0] * 3 / 2 / (1 << 3)
-						dy = direction[dir][1] * 3 / 2 / (1 << 3)
-					else:
-						dx = direction[dir][0] / (1 << 3)
-						dy = direction[dir][1] / (1 << 3)
-					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
+					self.shottome(player_x, player_y, dir, 0, enemy_bullets, uramode)
+
+#					if(uramode > 1):
+#						dx = direction[dir][0] * 3 / 2 / (1 << 3)
+#						dy = direction[dir][1] * 3 / 2 / (1 << 3)
+#					else:
+#						dx = direction[dir][0] / (1 << 3)
+#						dy = direction[dir][1] / (1 << 3)
+#					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
 					self.tkshotcount = self.shot_c
 			elif(self.teki_shotinfo == 1):
 				#3WAY
@@ -664,17 +678,23 @@ class Enemy:
 					self.tkshotcount -= 1
 				else:
 					dir = tekishot_dir(player_x, player_y, self.x, self.y)
-					dx = direction[dir][0] / (1 << 3)
-					dy = direction[dir][1] / (1 << 3)
-					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
+					self.shottome(player_x, player_y, dir, 0, enemy_bullets, uramode)
+
+#					dx = direction[dir][0] / (1 << 3)
+#					dy = direction[dir][1] / (1 << 3)
+#					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
 					dir2 = (dir + 2) % 32
-					dx = direction[dir2][0] / (1 << 3)
-					dy = direction[dir2][1] / (1 << 3)
-					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
+					self.shottome(player_x, player_y, dir2, 0, enemy_bullets, uramode)
+
+#					dx = direction[dir2][0] / (1 << 3)
+#					dy = direction[dir2][1] / (1 << 3)
+#					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
 					dir2 = (dir - 2 + 32) % 32
-					dx = direction[dir2][0] / (1 << 3)
-					dy = direction[dir2][1] / (1 << 3)
-					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
+					self.shottome(player_x, player_y, dir2, 0, enemy_bullets, uramode)
+
+#					dx = direction[dir2][0] / (1 << 3)
+#					dy = direction[dir2][1] / (1 << 3)
+#					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
 					self.tkshotcount = self.shot_c
 
 			elif(self.teki_shotinfo == 2):
@@ -683,20 +703,24 @@ class Enemy:
 					self.tkshotcount -= 1
 				else:
 					dir = random.randint(0, 32) #int(random.random()) % 32
-					dx = direction[dir][0] / (1 << 3)
-					dy = direction[dir][1] / (1 << 3)
-					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
-					self.tkshotcount = self.shot_c
+					self.shottome(player_x, player_y, dir, 0, enemy_bullets, uramode)
+
+#					dx = direction[dir][0] / (1 << 3)
+#					dy = direction[dir][1] / (1 << 3)
+#					enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 0))
+#					self.tkshotcount = self.shot_c
 			elif(self.teki_shotinfo == 3):
 				#LASER
 				if(self.tkshotcount != 0):
 					self.tkshotcount -= 1
-					if(self.tkshotcount < SHOTCOUNT - 1):
+					if(self.tkshotcount < (SHOTCOUNT - 1)):
 						if(int(self.tkshotcount) & 2):
 							dir = DIR_DOWN
-							dx = direction[dir][0] / (1 << 3)
-							dy = direction[dir][1] / (1 << 3)
-							enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 1))
+							self.shottome(player_x, player_y, dir, 1, enemy_bullets, uramode)
+
+#							dx = direction[dir][0] / (1 << 3)
+#							dy = direction[dir][1] / (1 << 3)
+#							enemy_bullets.append(EnemyBullet(self.x + (4) + dx, self.y + (4) + dy, dx, dy, 1, 1))
 
 
 #		for enemy in self.enemies:
@@ -911,7 +935,7 @@ class App:
 					else:
 						self.shot_c = 0
 			if(self.noshotdmg_flag == False):	#/* PACIFIST */
-				self.score += 10000
+				self.score += 20000
 #				seflag = 4;
 				pyxel.play(3,17,0,False,True)
 #				self.noshotdmg_flag = False;
@@ -972,9 +996,11 @@ class App:
 
 	# スコア表示
 	def score_display(self):
-		self.put_numd(self.score, 8)
+		if(self.score > 9999999):
+			self.hiscore = self.score = 9999999
+		self.put_numd(self.score, 7)
 		self.put_strings(15 - 8, 0, self.str_temp)
-		if(self.score >= self.hiscore) and ((self.score % 10) == 0):
+		if((self.score == 9999999) or ((self.score >= self.hiscore) and ((self.score % 10) == 0))):
 			self.hiscore = self.score
 			self.put_strings(0, 0, "HIGH ")
 		else:
@@ -992,7 +1018,7 @@ class App:
 			if((self.score % 10) == 0):
 				self.hiscore = self.score
 
-		self.put_numd(self.hiscore, 8)
+		self.put_numd(self.hiscore, 7)
 
 		self.put_strings(9, 12, "HIGH")
 		self.put_strings(9 + 5, 12, self.str_temp)
@@ -1290,9 +1316,10 @@ class App:
 									self.player_bullets.remove(bullet)
 
 									if(self.uramode):
+										enemy.check_revshot(self.player_x, self.player_y, self.enemy_bullets, self.uramode)
 #										enemy.shottome2(tekishot_dir(), PAT_TKSHOT1);
-										dir = tekishot_dir(self.player_x, self.player_y, enemy.x, enemy.y)
-										enemy.shottome2(self.player_x, self.player_y, dir, 0, self.enemy_bullets, self.uramode)
+#										dir = tekishot_dir(self.player_x, self.player_y, enemy.x, enemy.y)
+#										enemy.shottome2(self.player_x, self.player_y, dir, 0, self.enemy_bullets, self.uramode)
 
 								break
 

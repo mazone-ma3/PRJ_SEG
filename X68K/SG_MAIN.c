@@ -109,13 +109,11 @@ void put_numd(long j, char digit)
 
 void score_display(void)
 {
-	put_numd(score, 8);
+	put_numd(score, 7);
 	put_strings(SCREEN2, 15-8, 0 , str_temp, CHRPAL_NO);
-	if(score >= hiscore){
-		if((score % 10) == 0){
-			hiscore = score;
-			put_strings(SCREEN2, 0, 0, "HIGH ", CHRPAL_NO);
-		}
+	if((score == SCORE_MAX) || ((score >= hiscore) && ((score % 10) == 0))){
+		hiscore = score;
+		put_strings(SCREEN2, 0, 0, "HIGH ", CHRPAL_NO);
 	}else
 		put_strings(SCREEN2, 0, 0, "SCORE", CHRPAL_NO);
 }
@@ -132,7 +130,7 @@ void hiscore_display(void)
 		if((score % 10) == 0)
 			hiscore = score;
 
-	put_numd(hiscore, 8);
+	put_numd(hiscore, 7);
 
 	put_strings(SCREEN2, 9, 12, "HIGH", CHRPAL_NO);
 	put_strings(SCREEN2, 9 + 5, 12, str_temp, CHRPAL_NO);
@@ -463,8 +461,9 @@ short game_run(short mode){
 		}
 
 		if(scrdspflag == TRUE){
-			if(score > SCORE_MAX)
-				score = SCORE_MAX;
+			if(score > SCORE_MAX){
+				hiscore = score = SCORE_MAX;
+			}
 			score_display();
 			scrdspflag = FALSE;
 /*			if(score >= hiscore){

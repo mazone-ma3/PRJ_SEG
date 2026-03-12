@@ -50,7 +50,7 @@ enum {
 	MY_SIZE_Y = 1,
 
 	MYSHOT_OFS_X = 0,
-	MYSHOT_OFS_Y = 0,
+	MYSHOT_OFS_Y = 4,
 
 	MYSHOT_SIZE_X = 16,
 	MYSHOT_SIZE_Y = 4,
@@ -77,7 +77,7 @@ enum {
 	TKD_SIZE_Y = 4,
 
 	/* 表示制限数 */
-	MAX_MYSHOT = 4, //2, //1, //12, //8, //6,
+	MAX_MYSHOT = 8, //2, //1, //12, //8, //6,
 	MAX_TEKI = 8, //8,
 
 	/* 表示先頭プレーンNo. 固定 */

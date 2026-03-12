@@ -519,7 +519,7 @@ void move_tekishot(void)
 void check_revshot(void)
 {
 //	int l;
-	return;
+//	return;
 	if(uramode > 2){
 		l = tekishot_dir();
 
@@ -559,18 +559,18 @@ void move_teki_bomb(void)//(unsigned char i)
 		case 10:
 //			teki_pat[i] = PAT_BAKU3;
 			teki_pal[i] = REVPAL_NO;
-			if(uramode)
-				check_revshot();
+//			if(uramode)
+//				check_revshot();
 			break;
 
 		case 13:
-			if(uramode)
-				check_revshot();
+//			if(uramode)
+//				check_revshot();
 			break;
 
 		case 15:
-			if(uramode)
-				check_revshot();
+//			if(uramode)
+//				check_revshot();
 //			teki_hp[i] = 0;
 //			teki_y[i] = SPR_DEL_Y;
 
@@ -1067,10 +1067,11 @@ void move_teki(void)
 												--teki_hp[i];
 
 											if(uramode){
-												dir = tekishot_dir();
+												check_revshot();
+/*												dir = tekishot_dir();
 												pat = PAT_TKSHOT1;
 												shottome2(); //tekishot_dir(), PAT_TKSHOT1);
-											}
+*/											}
 
 											/* ÉmÅ[É}ÉãíeÇ»ÇÁâÊñ äOÇ…è¡ãé */
 //											myshot_x[j] = SPR_DEL_X;
@@ -1354,7 +1355,7 @@ void do_schedule(void)
 					}
 				}
 				if(!noshotdmg_flag){	/* PACIFIST */
-					score += 5000; //10000;
+					score += 20000; //10000;
 					scrdspflag = TRUE;
 					seflag = 4;
 				}
