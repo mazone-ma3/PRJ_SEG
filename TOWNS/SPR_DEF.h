@@ -55,12 +55,12 @@ CONST SPR_COMB jiki4_comb[JIKI_PARTS] = {
 /* 自機ショット定義 */
 
 CONST SPR_COMB myshot1_comb[] = {
-	{  IMG_SET(4, 1),  0,  4,0,},
+	{  IMG_SET(4, 1),  0,  0,0,},
 /*	{  IMG_SET(3, 1), 13,  8,0,} */
 };
 
 CONST SPR_COMB myshot2_comb[] = {
-	{  IMG_SET(4, 1) | SPR_FLIP_H,  0,  4,0,},
+	{  IMG_SET(4, 1) | SPR_FLIP_H,  0,  0,0,},
 //	{  IMG_SET(3, 0),  1,  8,0,},
 };
 

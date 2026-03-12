@@ -1620,7 +1620,7 @@ short game_loop(void){
 					if(myshot_free[MAX_MYSHOT] != END_LIST){
 						ADD_LIST(MAX_MYSHOT, tmp, myshot_next, myshot_free);
 						myshot_x[tmp] = my_data_x[i] + (1 << SHIFT_NUM);
-						myshot_y[tmp] = my_data_y[i];
+						myshot_y[tmp] = my_data_y[i] + (4 << SHIFT_NUM);
 
 						myshot_yy[tmp] = 0;
 						if(muki == PAT_JIKI_R)
