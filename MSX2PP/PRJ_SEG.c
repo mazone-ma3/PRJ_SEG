@@ -2249,13 +2249,17 @@ unsigned char *oldscr = 0xfcb0;
 
 unsigned char forclr_old, bakclr_old, bdrclr_old, clicksw_old;
 
-void main(void)
+int	main(int argc,char **argv)
 {
 	bgmmode = checkbgm();
 //	getchar();
 
-	VDP_readadr = read_mainrom(0x0006);
-	VDP_writeadr = read_mainrom(0x0007);
+	if (argc < 2){
+		VDP_readadr = read_mainrom(0x0006);
+		VDP_writeadr = read_mainrom(0x0007);
+	}else{
+		VDP_readadr = VDP_writeadr = 0x88;
+	}
 
 	forclr_old = *forclr;
 	bakclr_old = *bakclr;
@@ -2666,6 +2670,7 @@ __endasm;
 	key_flush();
 //	term();
 //	exit(0);
+	return 0;
 }
 
 
