@@ -50,7 +50,7 @@ enum {
 	MY_SIZE_Y = 1,
 
 	MYSHOT_OFS_X = 0,
-	MYSHOT_OFS_Y = 4,
+	MYSHOT_OFS_Y = 0,
 
 	MYSHOT_SIZE_X = 16,
 	MYSHOT_SIZE_Y = 4,
