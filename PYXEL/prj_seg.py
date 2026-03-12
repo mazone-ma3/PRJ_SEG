@@ -1108,7 +1108,7 @@ class App:
 		elif self.scene == "TITLE":
 			self.keymode = 0
 			if(self.count < 30*60):
-				self.count += 1
+#				self.count += 1
 				if (pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN)):
 					self.y = 1 #0
 					self.count = 0
