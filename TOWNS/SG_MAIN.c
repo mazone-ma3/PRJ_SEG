@@ -570,6 +570,9 @@ short game_run(short mode){
 //							put_strings(SCREEN2, 10, 14, "  ", CHRPAL_NO);
 							scrlspd = 0; //SPR_DIV / 4;
 							score_displayall();
+							if(combo){
+								combo_display();
+							}
 							put_my_hp_dmg();
 							set_object();
 							wait_sprite();
@@ -596,7 +599,7 @@ short game_run(short mode){
 
 						if(timeup == (60*10-1)){
 							while(keyscan() & (KEY_A | KEY_START)){
-								wait_sprite();
+			f					wait_sprite();
 								set_sprite();
 								wait_vsync();
 							}
