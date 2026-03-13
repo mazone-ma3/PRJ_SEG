@@ -220,7 +220,7 @@ class Enemy:
 		self.w = 16
 		self.h = 16
 		self.speed = speed
-		self.tkshotcount = SHOTCOUNT - 2
+		self.tkshotcount = SHOTCOUNT # - 2
 		self.hp = hp
 		self.type = type
 		self.dmgtime = 0
@@ -802,7 +802,7 @@ class App:
 	# データ初期化 ############################################################
 	def initdata(self, mode):
 		self.player_x = 128 - 16
-		self.player_y = 120 + 16#- 16
+		self.player_y = 18 * 8 - 16 #120 + 16#- 16
 
 		self.player_xx = 0
 		self.player_yy = 0
@@ -824,7 +824,7 @@ class App:
 		self.my_hp = self.max_my_hp
 		self.my_dmg = False
 		self.mypal_dmgtime = 0
-		self.shot_c = 6 << 3
+		self.shot_c = int(6 << 3)
 		self.noshotdmg_flag = False
 
 		self.uramode = 0
@@ -889,8 +889,8 @@ class App:
 #			print(f"敵追加")
 			type = (event['event_0'])
 			chr = int(event['event_1'])
-			x = int(event['event_2'])*256/144-16
-			y = int(event['event_3']) -16
+			x = int((int(event['event_2'])-7)*256/144) - 16 
+			y = int(event['event_3'])  - 16
 			hp = int(event['event_4'])
 			shotinfo = int(event['event_5'])
 			shot_c = SHOTCOUNT - 2
@@ -1372,9 +1372,14 @@ class App:
 					# 当たり判定（プレイヤーと敵の弾）
 					for bullet  in self.enemy_bullets[:]:
 						if (self.player_x + 9 < bullet.x + bullet.w + 2 and
-							self.player_x + 9 + 1 > bullet.x and
+							self.player_x + 9 + 1 > bullet.x + 2 and
 							self.player_y + 9 < bullet.y + bullet.h + 2 and
-							self.player_y + 9 + 1 > bullet.y):
+							self.player_y + 9 + 1 > bullet.y + 2):
+
+#						if (self.player_x - bullet.x < 2 - 9 + bullet.w and
+#							self.player_x - bullet.x > 2 - 9 - 1 and
+#							self.player_y - bullet.y < 2 - 9 + bullet.h and
+#							self.player_y - bullet.y > 2 - 9 - 1):
 							self.enemy_bullets.remove(bullet)
 							self.my_dmg = True
 							self.noshotdmg_flag = True
