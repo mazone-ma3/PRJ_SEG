@@ -1457,9 +1457,9 @@ short game_loop(void){
 //				bg_roll();
 
 #ifdef TOWNS
-				if(combo){
-					combo_display();
-				}
+//				if(combo){
+//					combo_display();
+//				}
 				do_putmessage();
 				set_object();
 #else
