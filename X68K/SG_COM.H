@@ -1432,6 +1432,12 @@ short game_loop(void){
 		}
 	}
 
+#ifdef TOWNS
+	if(combo){
+		combo_display();
+	}
+#endif
+
 	{
 		if(keycode & KEY_A) /* Z,SPACE */
 			a=1;
@@ -1451,6 +1457,9 @@ short game_loop(void){
 //				bg_roll();
 
 #ifdef TOWNS
+				if(combo){
+					combo_display();
+				}
 				do_putmessage();
 				set_object();
 #else
@@ -1759,13 +1768,11 @@ short game_loop(void){
 	if(!scrdspflag){
 		if(combo_display_flag){
 			combo_display_flag = 0;
-#endif
 			if(combo){
 				combo_display();
 			}else{
 				combo_display_clear();
 			}
-#ifndef TOWNS
 		}
 	}
 #endif
