@@ -315,7 +315,7 @@ class Enemy:
 			self.shottome2(player_x, player_y, dir, 0, enemy_bullets, uramode)
 
 
-	def update(self, player_x, player_y, enemy_bullets, uramode):
+	def update(self, player_x, player_y, enemy_bullets, uramode, App):
 
 		# 敵の動き
 		if self.chr != 0:
@@ -607,6 +607,8 @@ class Enemy:
 				# 敵機画面外消去(下方向)
 				if(tmp_y > 256): #(SPR_MAX_Y)):
 					self.hp = 0
+					App.combo = 0
+					App.combo_timer = 0
 
 			else:
 				tmp_x = self.x
@@ -787,6 +789,9 @@ class App:
 		self.muki = PAT_JIKI_N
 		self.wake_count = 0
 
+		self.combo = 0
+		self.combo_timer = 0
+
 # pyxel.colors.from_list([0x111111, 0x222222, 0x333333]); pyxel.colors[15] = 0x112233
 		# 星の初期化
 		self.stars = [Star(i * (256 / self.starnums)) for i in range(self.starnums)]
@@ -830,6 +835,9 @@ class App:
 		self.uramode = 0
 
 		self.muki = PAT_JIKI_N
+
+		self.combo = 0;
+		self.combo_timer = 0;
 
 		if(mode == 1):
 			self.stage = 3;
@@ -935,7 +943,7 @@ class App:
 					else:
 						self.shot_c = 0
 			if(self.noshotdmg_flag == False):	#/* PACIFIST */
-				self.score += 20000
+				self.score += 100000
 #				seflag = 4;
 				pyxel.play(3,17,0,False,True)
 #				self.noshotdmg_flag = False;
@@ -1191,11 +1199,13 @@ class App:
 					self.scene = "GAME"
 
 		elif self.scene == "GAME":
-			self.do_schedule()
 
 			if pyxel.btnp(pyxel.KEY_X) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_B):
 				self.scene = "PAUSE"
 			else:
+				if(self.combo != 0):
+					self.combo_timer = self.combo_timer + 1
+				self.do_schedule()
 
 				# 自機移動
 				# タッチ風移動（仮：マウスでシミュレート）
@@ -1289,7 +1299,7 @@ class App:
 
 				# 敵の更新
 				for enemy in self.enemies[:]:
-					enemy.update(self.player_x, self.player_y, self.enemy_bullets, self.uramode)
+					enemy.update(self.player_x, self.player_y, self.enemy_bullets, self.uramode, self)
 #					if enemy.y > 256:
 #						self.enemies.remove(enemy)
 
@@ -1365,8 +1375,10 @@ class App:
 #								if(self.mypal_dmgtime == 0):
 #									self.my_hp = self.my_hp - 1
 							else:
-								self.score += 500
 								enemy.hp = 0
+								self.combo += 1;
+								self.combo_timer = 0;
+								self.score += 500 * self.combo;
 								pyxel.play(3,17,0,False,True)
 
 					# 当たり判定（プレイヤーと敵の弾）
@@ -1404,6 +1416,11 @@ class App:
 #						self.my_dmg = False
 
 #				self.do_schedule()
+
+				# コンボ切れ
+				if (self.combo_timer > 60*3):
+					self.combo = 0
+					self.combo_timer = 0
 
 		elif self.scene == "CONTINUE":
 			if pyxel.btnp(pyxel.KEY_SPACE) or pyxel.btnp(pyxel.KEY_Z) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A):
@@ -1555,6 +1572,12 @@ class App:
 			self.put_strings(0, 31, "LIFE ")
 			self.score_displayall()
 			self.put_my_hp_dmg()
+
+			if self.combo != 0:
+				self.put_numd(self.combo, 3);
+				self.put_strings(16+7, 0 , self.str_temp);
+				self.put_strings(16, 0, "COMBO");
+
 
 		if(self.scene == "GAMEOVER"):
 			self.put_strings(11, 12, " GAME OVER ")

@@ -154,6 +154,10 @@ unsigned char tkshot_c;						/* 敵弾発射間隔 初期値 */
 
 unsigned char scrdspflag;						/* スコア文字更新フラグ */
 
+unsigned short combo = 0;
+int combo_timer = 0;
+unsigned char combo_display_flag = 0;
+
 /* テンポラリ用グローバル変数 */
 unsigned char chrnum;
 unsigned char chrpal;
@@ -212,7 +216,18 @@ void my_dmg(void)
 	noshotdmg_flag = TRUE;
 }
 
+void combo_display(void)
+{
+	put_numd(combo, 3);
+	put_strings(SCREEN2, 16+7, 0 , str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 16, 0, "COMBO", CHRPAL_NO);
+}
 
+void combo_display_clear(void)
+{
+	put_strings(SCREEN2, 16+7, 0, "     ", CHRPAL_NO);
+	put_strings(SCREEN2, 16, 0, "       ", CHRPAL_NO);
+}
 
 unsigned char x = 0;
 int loopcounter = 0;
@@ -987,6 +1002,9 @@ void move_star_pat1(void)
 	/* 画面外消去(下方向) */
 	if(tmp_y > (SPR_MAX_Y)){
 		teki_hp[i] = 0;
+		combo = 0;
+		combo_display_flag = 1;
+		combo_timer = 0;
 	}
 }
 
@@ -1113,7 +1131,13 @@ void move_teki(void)
 								}else{
 									seflag = 4;
 									teki_hp[i] = 0;
-									score += 500;
+//									score += 500;
+
+									combo++;
+									combo_timer = 0;
+									combo_display_flag = 1;
+									score += 500 * combo;
+
 									scrdspflag = TRUE;
 								}
 							}
@@ -1355,7 +1379,7 @@ void do_schedule(void)
 					}
 				}
 				if(!noshotdmg_flag){	/* PACIFIST */
-					score += 20000; //10000;
+					score += 100000; //10000;
 					scrdspflag = TRUE;
 					seflag = 4;
 				}
@@ -1397,6 +1421,17 @@ short game_loop(void){
 	i = 0;
 	a = 0;
 	b = 0;
+
+	if(combo){
+		++combo_timer;
+		// コンボ切れ
+		if (combo_timer > 60*3) {
+			combo = 0;
+			combo_display_flag = 1;
+			combo_timer = 0;
+		}
+	}
+
 	{
 		if(keycode & KEY_A) /* Z,SPACE */
 			a=1;
@@ -1720,6 +1755,21 @@ short game_loop(void){
 //	}
 //	spr_count[spr_page] = tmp_spr_count;
 
+#ifndef TOWNS
+	if(!scrdspflag){
+		if(combo_display_flag){
+			combo_display_flag = 0;
+#endif
+			if(combo){
+				combo_display();
+			}else{
+				combo_display_clear();
+			}
+#ifndef TOWNS
+		}
+	}
+#endif
+
 	return NOERROR;
 }
 
@@ -1761,6 +1811,9 @@ void game_init(void){
 	trgcount2 = 0;	/* 連射リミッタ */
 	trgnum = 0;
 	total_count = 0;
+
+	combo = 0;
+	combo_timer = 0;
 
 //	scrl = 0;
 	scrl_spd = SCRL_MIN;

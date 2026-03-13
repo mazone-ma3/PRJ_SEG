@@ -5,7 +5,7 @@
 #define MAIN
 //#define MSX2
 
-#define DEBUG
+//#define DEBUG
 
 //#define SINGLEMODE
 
@@ -1414,7 +1414,7 @@ __endasm;
 //	if(*jiffy >= 60){
 		old_jiffy2 = *jiffy;
 		put_numd((long)(total_count), 2);
-		put_strings(SCREEN2, 27, 0, str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 27, 25, str_temp, CHRPAL_NO);
 		total_count = 0;
 //		*jiffy = 0;
 	}
@@ -1455,7 +1455,7 @@ __endasm;
 		old_jiffy2 = *jiffy;
 		EI();
 		put_numd((long)(total_count), 2);
-		put_strings(SCREEN2, 27, 0, str_temp, CHRPAL_NO);
+		put_strings(SCREEN2, 27, 25, str_temp, CHRPAL_NO);
 		total_count = 0;
 //		*jiffy = 0;
 	}
@@ -2426,10 +2426,10 @@ int	main(int argc,char **argv)
 */
 			put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
 #ifdef DEBUG
-			put_strings(SCREEN2, 29, 0, "FPS", CHRPAL_NO);
+			put_strings(SCREEN2, 29, 25, "FPS", CHRPAL_NO);
 #endif
 #ifdef DEBUG_
-			put_strings(SCREEN2, 29, 25, "SPR", CHRPAL_NO);
+			put_strings(SCREEN2, 29, 24, "SPR", CHRPAL_NO);
 #endif
 			score_displayall();
 			put_my_hp_dmg();
