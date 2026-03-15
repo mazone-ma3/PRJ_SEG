@@ -25,6 +25,9 @@ void reset_vsync(void);
 
 unsigned char keyscan(void);
 
+void put_strings(int scr, int x, int y,  char *str, char pal);
+void hiscore_display(void);
+
 extern unsigned short title_index;
 extern unsigned int encode;
 

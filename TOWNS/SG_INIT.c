@@ -14,6 +14,8 @@
 //#include <FMCFRB.H>
 #include <TOWNS/segment.h>
 
+#include <math.h>
+
 #include "sg.h"
 /*#include "spmake.h"*/
 #include "sp68_ld.h"
@@ -67,6 +69,8 @@ char *msv_mml[4] = {
 };
 
 char msv_se[4][256];
+
+short sin_table[512];
 
 unsigned char org_pal[16][3] = {
 	{  0,  0,  0},
@@ -258,12 +262,12 @@ void pal_allblack(int pal_no)
 		pal_set(pal_no, j, 0, 0, 0);
 }
 
-void paint(unsigned short color)
+void paint1(unsigned short color)
 {
 	unsigned short i, j;
 
 	_disable();
-	for (i = 256; i < (512); ++i){
+	for (i = 0; i < (256); ++i){
 		for (j = 16; j < (160-16); j+=2){
 //			_FP_OFF(vram) = (j + i * 1024 + 32) / 2;
 //			*vram = color;
@@ -299,7 +303,7 @@ void paint2(unsigned short pat)
 void clear(short type)
 {
 	if(type & 1){
-		paint(0x0);
+		paint1(0x0);
 	}
 	if(type & 2)
 		printf("\x1b*");
@@ -324,16 +328,19 @@ char *SND_load(char *fn, char*SNDBUFF){
 #define LINE 240 //212
 
 extern FILE *stream[2];
-longword vram_adr;
 
-int conv(char *loadfil, int x, int y)
+//short a;
+unsigned char title_pattern[2][(WIDTH * 4 * LINE + 2)];
+
+//int conv(char *loadfil, int x, int y, short *buffer)
+int conv(char *loadfil, unsigned char *buffer)
 {
 	long i, count, count2;
-	int k=0, l=0, m=0;
-	unsigned char read_pattern[WIDTH * LINE * 2+ 2];
+	int k=0, l=0, m=0, n = 0;
 	unsigned char pattern[10];
 	unsigned short fmtcolor[2]; //[4];
 	unsigned char msxcolor[8];
+	unsigned char read_pattern[WIDTH * LINE * 2+ 2];
 
 	if ((stream[0] = fopen( loadfil, "rb")) == NULL) {
 		printf("Can\'t open file %s.", loadfil);
@@ -346,10 +353,9 @@ int conv(char *loadfil, int x, int y)
 
 	fread(pattern, 1, 2, stream[0]);	/* MSXƒwƒbƒ_‚ð“Ç‚ÝŽÌ‚Ä‚é */
 
-
 	for(count = 0; count < 4; ++count){
-		i = fread(read_pattern, 1, WIDTH * LINE, stream[0]);
 		m = 0;
+		i = fread(read_pattern, 1, WIDTH * LINE, stream[0]);
 //		if(i < 1)
 //			break;
 		for(count2 = 0; count2 < WIDTH * LINE / 2; ++count2){
@@ -359,33 +365,20 @@ int conv(char *loadfil, int x, int y)
 			msxcolor[0] = (read_pattern[m] >>4) & 0x0f;
 			msxcolor[1] = read_pattern[m++] & 0x0f;
 			fmtcolor[0] = msxcolor[0] + msxcolor[1] * 16;
-//			fmtcolor[1] = msxcolor[1];// + msxcolor[1] * 16;
 
 			msxcolor[0] = (read_pattern[m] >>4) & 0x0f;
 			msxcolor[1] = read_pattern[m++] & 0x0f;
 			fmtcolor[1] = msxcolor[0] + msxcolor[1] * 16;
-//			fmtcolor[3] = msxcolor[1];// + msxcolor[1] * 16;
 
-//			_FP_OFF(vram_adr) = k * 2 + l * 2;
-			vram_adr = (k + x / 2) * 1 + (l + y) * 1;
-//			*(vram_adr++) = fmtcolor[0] + fmtcolor[1] * 256;
-//			_poke_word(0x120, vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
-			VRAM_putPixelW(vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
+//			vram_adr = (k + x / 2) * 1 + (l + y) * 1;
 
-/*			vram_adr += 2;
-//			*vram_adr = fmtcolor[2] + fmtcolor[3] * 256;
-//			_poke_word(0x120, vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
-			VRAM_putPixelW(vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
-//			_FP_OFF(vram_adr) = k * 2 + l * 2 + 256 * 2;
-			vram_adr = k * 2 + l * 2 + 256 * 2;
-//			*(vram_adr++) = fmtcolor[0] + fmtcolor[1] * 256;
-//			_poke_word(0x120, vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
-			VRAM_putPixelW(vram_adr, fmtcolor[0] + fmtcolor[1] * 256);
-			vram_adr += 2;
-//			*vram_adr = fmtcolor[2] + fmtcolor[3] * 256;
-//			_poke_word(0x120, vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
-			VRAM_putPixelW(vram_adr, fmtcolor[2] + fmtcolor[3] * 256);
-*/
+//			buffer[n++] = fmtcolor[0] + fmtcolor[1] * 256;
+			buffer[n++] = fmtcolor[0];
+			buffer[n++] = fmtcolor[1];
+
+//			VRAM_putPixelW(vram_adr, buffer[n]);
+//			n++;
+
 			k += 2;
 			if(k >= (128)){
 				k = 0;
@@ -396,6 +389,58 @@ int conv(char *loadfil, int x, int y)
 	fclose(stream[0]);
 
 	return 0;
+}
+
+void conv2(unsigned char *src, unsigned char *dst, char color)
+{
+	unsigned char color1, color2;
+	int i = 0, l, k;
+	color1 = color;
+	for(l = 0; l < 240; ++l){
+//		color2 = (src[i] >> 4) & 0x0f;
+//		i++;
+		for(k = 0; k < 128; ++k){
+			color2 =src[i] & 0x0f;
+			dst[i] = color1 | color2 * 16;
+			color1 = (src[i] >> 4) & 0x0f;
+			i++;
+		}
+	}
+	
+}
+long vram_adr;
+
+void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int offset)
+{
+	int i = 0, l, k, m, n, xx;
+	short sin, *data;
+	y -= offset;
+	m = 240 + offset;
+	for(l = offset; l < m; ++l){
+		sin = sin_table[l];
+		vram_adr = sin/2 + x / 2 + (l+y) * (256*2);
+
+		if(sin >= 0){
+			data = (short *)(&buffer[sin & 1][i]);
+		}else{
+			data = (short *)(&buffer[1 - (sin & 1)][i]);
+		}
+		sin /= 2;
+
+		n = (128+sin);
+//		for(xx = sin; xx < n; ++xx){
+		for(xx = sin; xx < n; xx+=2){
+//		for(k = 0; k < 128; k+=2){
+//			xx = k + sin;
+			if((xx >=0) && (xx < (128-1))){
+//			if((xx >=0) && (xx < (((128-1)/2)))){
+				VRAM_putPixelW(vram_adr, *data);
+			}
+			++data;
+			vram_adr+=2;
+		}
+		i+=(128);
+	}
 }
 
 int	main(int argc,char **argv){
@@ -430,6 +475,10 @@ int	main(int argc,char **argv){
 		msv_filename = argv[1];
 //		wpk_filename = NULL;
 	}
+
+	for(i = 0; i <  256; ++i)
+		sin_table[i] = sin_table[i + 256] = (16 * sin(2 * M_PI * i / 256));
+
 	load_fmdbgm("bgm.ob2");
 
 
@@ -515,7 +564,9 @@ int	main(int argc,char **argv){
 /*	spsave("CORECRA.PTN", 0x4000);*/
 
 	pal_allblack(BGPAL_NO);
-	conv("title.sc5", 32, 0);
+	conv("title.sc5", (unsigned char *)&title_pattern[0]);
+	conv2((unsigned char *)&title_pattern[0], (unsigned char *)&title_pattern[1], 0x02);
+//	draw_title(32, 0, (char *)title_pattern, 0);
 
 /* ‰¹ŠyÄ¶ */
 /* 	eup_play(eup_dat, 1); */
@@ -542,7 +593,9 @@ int	main(int argc,char **argv){
 		outportb(0x442,0 * 128 % 256);
 		outportb(0x443,0 * 128 / 256);
 
-//		paint(0x2222);
+		paint1(0x2222);
+		i = 128;
+		draw_title(32, 0, title_pattern, i++);
 		paint2( FONTPARTS + TITLEPARTS + 9);
 		init_star();
 		pal_all(BGPAL_NO, org_pal);
@@ -559,23 +612,36 @@ int	main(int argc,char **argv){
 
 		spr_count = 0;
 
-		do{
+//		do{
 			hiscore_display();
 			put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", CHRPAL_NO);
 			put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", CHRPAL_NO);
 			put_strings(SCREEN2, 9, 23, "      i  k   ", CHRPAL_NO);
 			put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", CHRPAL_NO);
 
+/*			keycode = keyscan();
+			if((keycode & KEY_B) || (KYB_read( 1, &encode ) == 0x1b) ){
+				errlv = SYSEXIT;
+				break;
+			}
+*/
+			wait_sprite();
+			set_sprite();
+//			wait_vsync2();
+
+		do{
 			keycode = keyscan();
 			if((keycode & KEY_B) || (KYB_read( 1, &encode ) == 0x1b) ){
 				errlv = SYSEXIT;
 				break;
 			}
-
-			wait_sprite();
-			set_sprite();
 			wait_vsync2();
-			bg_roll();
+
+
+//			paint1(0x0);
+			draw_title(32, 0, title_pattern, i++);
+			i %= 256;
+//			bg_roll();
 		}while(!(keycode & (KEY_A | KEY_START)));
 		do{
 			wait_sprite();
