@@ -420,22 +420,20 @@ void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int
 		sin = sin_table[l];
 		vram_adr = sin/2 + x / 2 + (l+y) * (256*2);
 
-		if(sin >= 0){
+		if(sin>=0){
 			data = (short *)(&buffer[sin & 1][i]);
+			n = 127;
+			xx = sin;
 		}else{
 			data = (short *)(&buffer[1 - (sin & 1)][i]);
+			sin /= 2;
+			vram_adr -= (sin*2);
+			data -= (sin);
+			n = 127 + sin*2;
+			xx = 0;
 		}
-		sin /= 2;
-
-		n = (128+sin);
-//		for(xx = sin; xx < n; ++xx){
-		for(xx = sin; xx < n; xx+=2){
-//		for(k = 0; k < 128; k+=2){
-//			xx = k + sin;
-			if((xx >=0) && (xx < (128-1))){
-//			if((xx >=0) && (xx < (((128-1)/2)))){
-				VRAM_putPixelW(vram_adr, *data);
-			}
+		for(; xx < n; xx+=2){
+			VRAM_putPixelW(vram_adr, *data);
 			++data;
 			vram_adr+=2;
 		}
@@ -589,15 +587,17 @@ int	main(int argc,char **argv){
 		pal_allblack(BGPAL_NO);
 		pal_allblack(CHRPAL_NO);
 
-		outportb(0x440,17);
-		outportb(0x442,0 * 128 % 256);
-		outportb(0x443,0 * 128 / 256);
-
 		paint1(0x2222);
 		i = 128;
 		draw_title(32, 0, title_pattern, i++);
 		paint2( FONTPARTS + TITLEPARTS + 9);
 		init_star();
+
+		outportb(0x440,17);
+		outportb(0x442,0 * 128 % 256);
+		outportb(0x443,0 * 128 / 256);
+
+		wait_vsync2();
 		pal_all(BGPAL_NO, org_pal);
 
 		do{
