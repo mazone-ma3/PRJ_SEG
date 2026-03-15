@@ -588,15 +588,17 @@ int	main(int argc,char **argv){
 		pal_allblack(BGPAL_NO);
 		pal_allblack(CHRPAL_NO);
 
-		outportb(0x440,17);
-		outportb(0x442,0 * 128 % 256);
-		outportb(0x443,0 * 128 / 256);
-
 		paint1(0x2222);
 		i = 128;
 		draw_title(32, 0, title_pattern, i++);
 		paint2( FONTPARTS + TITLEPARTS + 9);
 		init_star();
+
+		outportb(0x440,17);
+		outportb(0x442,0 * 128 % 256);
+		outportb(0x443,0 * 128 / 256);
+
+		wait_vsync2();
 		pal_all(BGPAL_NO, org_pal);
 
 		do{
