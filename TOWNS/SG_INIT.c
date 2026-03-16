@@ -412,9 +412,8 @@ long vram_adr;
 
 void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int offset)
 {
-	register volatile long redx asm ("edx");
-	register volatile short *redi asm ("edi");
-//	register volatile short rds asm ("ds");
+	register volatile short rdx asm ("dx");
+	register volatile short *rebx asm ("ebx");
 
 	int i = 0, l, k, m, n, xx;
 	short sin, *data;
@@ -423,6 +422,13 @@ void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int
 	x/=2;
 	y*=(256*2);
 	m = 240 + offset;
+
+asm volatile(
+	"push  %es\n"
+	"push  $0x104\n"
+	"pop   %es\n"
+);
+
 	for(l = offset; l < m; ++l){
 		sin = sin_table[l];
 		vram_adr = sin/2 + x + y;
@@ -442,29 +448,24 @@ void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int
 			++data;
 			vram_adr+=2;
 		}
-	redi = vram_adr;
+		rebx = vram_adr;
 		for(; xx < n; xx+=2){
+			rdx = *data;
 asm volatile(
-	";push  %edi\n"
-	"push  %ds\n"
-);
-	redx = *data;
-asm volatile(
-	"push  $0x104\n"
-	"pop   %ds\n"
-);
-	*redi = redx;
-asm volatile(
-	"pop   %ds\n"
-	";pop   %edi\n"
+	"movw	%%dx,%%es:(%%ebx)\n"
+	:
+	:"r"(rebx),"r"(rdx)
 );
 //			VRAM_putPixelW(vram_adr, *data);
 //			vram_adr+=2;
 			++data;
-			++redi;
+			++rebx;
 		}
 		i+=(128);
 	}
+asm volatile(
+	"pop   %es\n"
+);
 }
 
 int	main(int argc,char **argv){
