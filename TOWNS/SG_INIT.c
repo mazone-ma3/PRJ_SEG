@@ -427,11 +427,12 @@ asm volatile(
 	"pop   %es\n"
 );
 
-	for(l = offset; l < m; ++l){
+	l = offset;
+	do{
 		sin = sin_table[l];
 		y += (256 * 2);
 
-		rebx = sin / 2 + x + y;
+		rebx = (volatile short int *)(sin / 2 + x + y);
 		if(sin >= 0){
 			data = (short *)(&buffer[sin & 1][i]);
 			j = 0;
@@ -450,7 +451,7 @@ asm volatile(
 
 		n += (int)rebx;
 
-		for(; rebx < n; ++rebx){
+		do{
 			rdx = *data;
 asm volatile(
 	"movw	%%dx,%%es:(%%ebx)\n"
@@ -458,9 +459,9 @@ asm volatile(
 	:"r"(rebx),"r"(rdx)
 );
 			++data;
-		}
+		}while((int)++rebx < n);
 		i+=(128);
-	}
+	}while(++l < m);
 asm volatile(
 	"pop   %es\n"
 );
