@@ -408,19 +408,17 @@ void conv2(unsigned char *src, unsigned char *dst, char color)
 	}
 	
 }
-long vram_adr;
 
 void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int offset)
 {
 	register volatile short rdx asm ("dx");
 	register volatile short *rebx asm ("ebx");
 
-	int i = 0, l, k, m, n, xx;
+	int i = 0, j, l, k, m, n, xx;
 	short sin, *data;
 
-//	rax = 0;
-	x/=2;
-	y*=(256*2);
+	x /= 2;
+	y *= (256 * 2);
 	m = 240 + offset;
 
 asm volatile(
@@ -431,35 +429,35 @@ asm volatile(
 
 	for(l = offset; l < m; ++l){
 		sin = sin_table[l];
-		vram_adr = sin/2 + x + y;
-		y += (256*2);
+		y += (256 * 2);
 
+		rebx = sin / 2 + x + y;
 		if(sin >= 0){
 			data = (short *)(&buffer[sin & 1][i]);
+			j = 0;
+			sin /= 2;
 		}else{
 			data = (short *)(&buffer[1 - (sin & 1)][i]);
+			sin /= 2;
+			j = ((sin - 1))/2;
+			rebx -= j;
+			data -= j;
 		}
-		sin /= 2;
 
-		n = (128+sin);
-		if(n > 128 -1)
-			n = 128-1;
-		for(xx = sin; xx < 0; xx+=2){
-			++data;
-			vram_adr+=2;
-		}
-		rebx = vram_adr;
-		for(; xx < n; xx+=2){
+		n = (128 + sin);
+		if(n > 128 - 8)
+			n = 128 - 8;
+
+		n += (int)rebx;
+
+		for(; rebx < n; ++rebx){
 			rdx = *data;
 asm volatile(
 	"movw	%%dx,%%es:(%%ebx)\n"
 	:
 	:"r"(rebx),"r"(rdx)
 );
-//			VRAM_putPixelW(vram_adr, *data);
-//			vram_adr+=2;
 			++data;
-			++rebx;
 		}
 		i+=(128);
 	}
