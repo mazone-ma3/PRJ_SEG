@@ -412,10 +412,15 @@ long vram_adr;
 
 void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int offset)
 {
+	register volatile long redx asm ("edx");
+	register volatile short *redi asm ("edi");
+//	register volatile short rds asm ("ds");
+
 	int i = 0, l, k, m, n, xx;
 	short sin, *data;
+
+//	rax = 0;
 	x/=2;
-//	y -= offset;
 	y*=(256*2);
 	m = 240 + offset;
 	for(l = offset; l < m; ++l){
@@ -431,12 +436,32 @@ void draw_title(int x, int y, unsigned char buffer[2][WIDTH * 4 * LINE + 2], int
 		sin /= 2;
 
 		n = (128+sin);
-		for(xx = sin; xx < n; xx+=2){
-			if((xx >=0) && (xx < (128-1))){
-				VRAM_putPixelW(vram_adr, *data);
-			}
+		if(n > 128 -1)
+			n = 128-1;
+		for(xx = sin; xx < 0; xx+=2){
 			++data;
 			vram_adr+=2;
+		}
+	redi = vram_adr;
+		for(; xx < n; xx+=2){
+asm volatile(
+	";push  %edi\n"
+	"push  %ds\n"
+);
+	redx = *data;
+asm volatile(
+	"push  $0x104\n"
+	"pop   %ds\n"
+);
+	*redi = redx;
+asm volatile(
+	"pop   %ds\n"
+	";pop   %edi\n"
+);
+//			VRAM_putPixelW(vram_adr, *data);
+//			vram_adr+=2;
+			++data;
+			++redi;
 		}
 		i+=(128);
 	}
