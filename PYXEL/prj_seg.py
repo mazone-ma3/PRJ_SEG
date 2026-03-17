@@ -64,6 +64,13 @@ direction = [ #[33][2] = (
 	[ 0, 0],
 ]
 
+stage_chr = [
+	[9, 0],
+	[10, 0],
+	[8, 0],
+	[8, 1],
+]
+
 def tekishot_dir(my_x, my_y, tmp_x, tmp_y):
 	tmp_yy = my_x - tmp_x
 	tmp_xx = my_y - tmp_y # + scrlspd
@@ -1476,9 +1483,9 @@ class App:
 
 	# 画面の更新
 	def draw(self):
-		pyxel.cls(2)
 
 		if self.scene == "MESSAGEIN" or self.scene == "MESSAGE" or self.scene == "MESSAGEFADE":
+			pyxel.cls(2)
 			self.put_strings(11-2, 14, "PROJECT SEGRETA")
 			self.put_strings(11, 16, "SINCE 2026")
 			self.changepal(self.colorvalue)
@@ -1494,12 +1501,18 @@ class App:
 
 		# 一枚絵表示
 		if self.scene == "TITLE" or self.scene == "OPENING" or self.scene == "TITLEFADE" or self.scene == "KEYFRASH":
+			pyxel.cls(2)
 			for i in range(0, 256):
 				pyxel.blt(self.sin_table[i + self.tableno], i, 0, 0, i, 256, 1, 0)
 		else:
-			for j in range(0,32):
-				for i in range(0,32):
-					pyxel.blt(i*8, j*8, 2, 16*9, 0, 8, 8,0)
+			if(self.stage <= 0):
+				no = 0
+			else:
+				no = (self.stage - 1) % 4
+
+			for j in range(0,16):
+				for i in range(0,16):
+					pyxel.blt(i*16, j*16, 2, stage_chr[no][0]*16, stage_chr[no][1]*16, 16, 16,0)
 #			pyxel.blt(0, 0, 0, 0, 0, 256, 256, 0)
 
 		if self.scene == "TITLE" or self.scene == "OPENING" or self.scene == "TITLEFADE" or self.scene == "KEYFRASH":

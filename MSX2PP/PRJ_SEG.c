@@ -66,6 +66,7 @@ unsigned char h_pos = 0, hsync_line = 0;
 
 void put_my_hp_dmg(void);
 void game_put(void);
+void do_put_stage(unsigned char no);
 
 /******************************************************************************/
 #include "sg_com.h"
@@ -1609,9 +1610,7 @@ void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str
 	XSIZA = 0;
 	YSIZE = 8;
 	APAGE = 2; //map_page;
-	if(scr == SCREEN2)
-		VPAGE = 0;
-	else
+	if(scr != SCREEN2)
 		VPAGE = 3;
 
 //	if(pal == CHRPAL_NO)
@@ -1627,18 +1626,52 @@ void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str
 		if((chr < 0x30))
 			chr = 0x40;
 		chr -= '0';
-		if((chr == (0x40 - '0')) && (pal == CHRPAL_NO)){
+/*		if((chr == (0x40 - '0')) && (pal == CHRPAL_NO)){
 			sx = 9 * 16;
 			sy = 0;
 			APAGE = 3;
-		}else{
+			dx = x * 8;
+			dy = y * 8;
+			VDPsetAREA2();
+		}else*/
+		if(scr != SCREEN2)
+		{
+			APAGE = 2;
 			sx = (chr & 0x0f) * 8;
 			sy = (chr / 16) * 8;
+//			VPAGE = 3;
+			dx = x * 8;
+			dy = y * 8;
+			VDPsetAREA2();
+		}else{
+			VDPcommand = HMMM;
+			APAGE = 4;
+			sx = x * 8;
+			sy = y * 8;
+			VPAGE = 2;
+			dx = 0 * 8;
+			dy = 5 * 8;
+			VDPsetAREA2();
+
+			VDPcommand = LMMM | R_TIMP;
 			APAGE = 2;
+			sx = (chr & 0x0f) * 8;
+			sy = (chr / 16) * 8;
+			VPAGE = 2;
+			dx = 0 * 8;
+			dy = 5 * 8;
+			VDPsetAREA2();
+
+			VDPcommand = HMMM;
+			APAGE = 2;
+			sx = 0 * 8;
+			sy = 5 * 8;
+			VPAGE = 0;
+			dx = x * 8;
+			dy = y * 8;
+			VDPsetAREA2();
+
 		}
-		dx = x * 8;
-		dy = y * 8;
-		VDPsetAREA2();
 		++x;
 	}
 }
@@ -2258,6 +2291,56 @@ void game_put(void)
 #endif
 }
 
+unsigned char stage_chr[4][2] = {
+	{9, 0},
+	{10, 0},
+	{8, 0},
+	{8, 1},
+};
+
+
+void do_put_stage(unsigned char no)
+{
+	no %= 4;
+
+	sx = stage_chr[no][0] * 16;
+	sy = stage_chr[no][1] * 16;
+//	dy = 18 * 8;
+	XSIZE = 16;
+	XSIZA = 0;
+	YSIZE = 16;
+	APAGE = 3;
+	VPAGE = 4;
+	VDPcommand = HMMM;
+	for(j = 0; j < 13; ++j){
+		for(i = 0; i < 16; ++i){
+			dx = i * 16;
+			dy = j * 16;
+			VDPsetAREA2();
+		}
+	}
+/*	YSIZE = 8;
+	j = 12;
+	for(i = 0; i < 16; ++i){
+		dx = i * 16;
+		dy = j * 16;
+		VDPsetAREA2();
+	}
+*/
+
+	sx = 0;
+	sy = 0; // + 512;
+	dx = 0;
+	dy = 0;
+	XSIZE = 256;
+	XSIZA = 0;
+	YSIZE = 212;
+	APAGE = 4;
+	VPAGE = 0;
+	VDPcommand = HMMM;
+	VDPsetAREA2();
+}
+
 
 /* ƒQ|ƒ€–{‘Ì‚Ìˆ— */
 short errlv = 0;
@@ -2428,24 +2511,10 @@ int	main(int argc,char **argv)
 			opening_demo();
 
 		}else if(errlv >= ERRLV1)
-*/		{
+*/
 
-			sx = 9 * 16;
-			sy = 0 * 16;
-//			dy = 18 * 8;
-			XSIZE = 16;
-			XSIZA = 0;
-			YSIZE = 8;
-			APAGE = 3;
-			VPAGE = 0;
-			VDPcommand = HMMM;
-			for(j = 0; j < 26; ++j){
-				for(i = 0; i < 16; ++i){
-					dx = i * 16;
-					dy = j * 8;
-					VDPsetAREA2();
-				}
-			}
+//		do_put_stage(stage);
+		{
 			wait_VDP();
 
 			set_vol(0);
@@ -2453,7 +2522,7 @@ int	main(int argc,char **argv)
 
 			spr_clear();
 
-			my_hp_flag = TRUE;
+//			my_hp_flag = TRUE;
 			game_init();	/* Še•Ï”‚Ì‰Šú‰» */
 /*
 			switch(errlv){
@@ -2474,15 +2543,15 @@ int	main(int argc,char **argv)
 					break;
 			}
 */
-			put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
+//			put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
 #ifdef DEBUG
 			put_strings(SCREEN2, 29, 25, "FPS", CHRPAL_NO);
 #endif
 #ifdef DEBUG_
 			put_strings(SCREEN2, 29, 24, "SPR", CHRPAL_NO);
 #endif
-			score_displayall();
-			put_my_hp_dmg();
+//			score_displayall();
+//			put_my_hp_dmg();
 
 			init_star();
 

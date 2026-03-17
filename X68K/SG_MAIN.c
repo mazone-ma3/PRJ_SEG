@@ -27,6 +27,7 @@ enum {
 void wait_vsync(void);
 void put_numd(long j, char digit);
 //char str_temp[9];
+void do_put_stage(unsigned char no);
 
 unsigned char spr_page = 1;
 volatile unsigned char spr_flag = 0, spr_next = 0;
@@ -372,7 +373,37 @@ void bg_roll(void)
 		}
 }
 
+unsigned char stage_chr[4] = {
+	(0x18+1)*4,
+	(0x18+2)*4,
+	(0x18+0)*4,
+	(0x18+16)*4,
+};
 
+void do_put_stage(unsigned char no)
+{
+	unsigned char x,y;
+	unsigned short *bgram;
+
+	no %= 4;
+
+	for(y = 0; y < 32; y+=2){
+//	for(y = 18; y < 20; ++y){
+		x = 0;
+		bgram = (unsigned short *)0xebe000;
+		bgram += x + y * 64; /* BG1 */
+		for(x = 0; x < 16; ++x){
+			*(bgram++) = stage_chr[no]; //(0x18+1)*4;
+			*(bgram++) = stage_chr[no]+2; //(0x18+1)*4;
+		}
+		bgram +=  32; /* BG1 */
+		for(x = 0; x < 16; ++x){
+			*(bgram++) = stage_chr[no]+1; //(0x18+1)*4;
+			*(bgram++) = stage_chr[no]+3; //(0x18+1)*4;
+		}
+	}
+
+}
 
 /* ƒQ|ƒ€–{‘Ì‚Ìˆ— */
 short game_run(short mode){

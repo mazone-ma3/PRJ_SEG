@@ -267,7 +267,7 @@ void paint1(unsigned short color)
 	unsigned short i, j;
 
 	_disable();
-	for (i = 0; i < (256); ++i){
+	for (i = 0; i < (256)*2; ++i){
 		for (j = 16; j < (160-16); j+=2){
 //			_FP_OFF(vram) = (j + i * 1024 + 32) / 2;
 //			*vram = color;
@@ -281,8 +281,16 @@ void paint1(unsigned short color)
 void paint2(unsigned short pat)
 {
 	unsigned short i, j, k, l;
+	register volatile short rdx asm ("dx");
+	register volatile short *rebx asm ("ebx");
 
-	_disable();
+asm volatile(
+	"push  %es\n"
+	"push  $0x104\n"
+	"pop   %es\n"
+);
+
+//	_disable();
 	for (i = 256; i < (512); i += 16){
 		for (j = 16; j < (160-16); j+=8){
 //		for (j = 32; j < (320-32); j+=16){
@@ -290,13 +298,23 @@ void paint2(unsigned short pat)
 			spram = 0x4000 + pat * 16*8;
 			for(k = 0; k < 16; ++k){
 				for(l = 0; l < 8; ++l){
-					VRAM_putPixelB(((j+l) + (i+k) * 512 + 32 * 0) / 1, _peek_byte(0x130, spram));
+//					VRAM_putPixelB(((j+l) + (i+k) * 512 + 32 * 0) / 1, _peek_byte(0x130, spram));
+					rdx = _peek_byte(0x130, spram);
+					rebx = ((j+l) + (i+k) * 512 + 32 * 0) / 1;
+asm volatile(
+	"movb	%%dx,%%es:(%%ebx)\n"
+	:
+	:"r"(rebx),"r"(rdx)
+);
 					spram += 1;
 				}
 			}
 		}
 	}
-	_enable();
+//	_enable();
+asm volatile(
+	"pop   %es\n"
+);
 }
 
 /*テキスト画面及びグラフィック画面の消去*/
@@ -616,7 +634,7 @@ int	main(int argc,char **argv){
 		paint1(0x2222);
 		i = 128;
 		draw_title(32, 0, title_pattern, i++);
-		paint2( FONTPARTS + TITLEPARTS + 9);
+//		paint2( FONTPARTS + TITLEPARTS + 9);
 		init_star();
 
 		outportb(0x440,17);
@@ -676,6 +694,7 @@ int	main(int argc,char **argv){
 			bg_roll();
 			keycode = keyscan();
 		}while((keycode & (KEY_A | KEY_START)));
+		spr_clear();
 
 //	goto end;
 

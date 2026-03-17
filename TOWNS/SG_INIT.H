@@ -11,6 +11,7 @@ void fadeinblack(unsigned char org_pal[16][3], int pal_no, int wait);
 void fadeoutblack(unsigned char org_pal[16][3], int pal_no, int wait);
 void fadeoutwhite(unsigned char org_pal[16][3], int pal_no, int wait);
 void pal_allblack(int pal_no);
+void paint2(unsigned short pat);
 
 extern unsigned char org_pal[16][3];
 

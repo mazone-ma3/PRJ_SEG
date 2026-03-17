@@ -814,16 +814,6 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 //			errlv -= ERRLV1;
 //			screen_fill_char(SCREEN2, 0, 0, 26, 32, 0);
 
-		for(y = 0; y < 64; ++y){
-//		for(y = 18; y < 20; ++y){
-			x = 0;
-			bgram = (unsigned short *)0xebe000;
-			bgram += (x * 2 + (y) * 0x80) / 2; /* BG1 */
-			for(x = 0; x < 32; ++x){
-				*(bgram++) = (0x18+1)*4;
-			}
-		}
-
 
 //			paint_bg0(PCG_SPACE);
 

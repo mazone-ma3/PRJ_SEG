@@ -12,6 +12,7 @@
 //#include <msvdrv.h>
 #include <TOWNS/segment.h>
 
+#include "subfunc.h"
 #include "sg_init.h"
 
 enum {
@@ -104,6 +105,9 @@ int spr_count,old_count;
 }*/
 
 void put_my_hp_dmg(void);
+void set_object(void);
+void do_putmessage(void);
+void do_put_stage(unsigned char no);
 
 /******************************************************************************/
 #include "sg_com.h"
@@ -514,6 +518,17 @@ void do_putmessage(void)
 	put_strings(SCREEN2, put_x, put_y, put_strdata, CHRPAL_NO);
 }
 
+unsigned char stage_chr[4][2] = {
+	{9, 0},
+	{10, 0},
+	{8, 0},
+	{8, 1},
+};
+void do_put_stage(unsigned char no)
+{
+	no %= 4;
+	paint2( FONTPARTS + TITLEPARTS + stage_chr[no][0] + stage_chr[no][1] * 16);
+}
 
 /* ÉQÅ|ÉÄñ{ëÃÇÃèàóù */
 short game_run(short mode){

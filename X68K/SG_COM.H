@@ -1254,7 +1254,7 @@ int put_x = 0;
 int put_y = 0;
 char put_strdata[1000] = "";
 
-void com_putmessage(int i)
+void com_putmessage(void)
 {
 	put_x = command[schedule_ptr + 1];
 	put_y = command[schedule_ptr + 2];
@@ -1271,6 +1271,10 @@ void com_putmessage(void)//(unsigned char i)
 
 void com_putstage(void)//(unsigned char i)
 {
+#ifdef MSX2PP
+		do_put_stage(stage);
+#endif
+
 #ifndef TOWNS
 	unsigned char str_x = command[schedule_ptr + 1];
 	unsigned char str_y = command[schedule_ptr + 2];
@@ -1296,6 +1300,14 @@ void com_putstage(void)//(unsigned char i)
 		strcat(put_strdata, str_temp);
 #else
 		put_strings(SCREEN2, str_x + 6, str_y, str_temp, CHRPAL_NO);
+#endif
+
+#ifndef MSX2PP
+		do_put_stage(stage - 1);
+#else
+		score_displayall();
+		put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
+		put_my_hp_dmg();
 #endif
 	}
 }
