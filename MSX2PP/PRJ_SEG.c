@@ -545,7 +545,7 @@ __asm
 	push	bc
 	push	de
 	push	hl
-	ld	hl,#08000h
+	ld	hl,#0BF60h
 	ld	d,a
 	ld	e,0
 	push	de

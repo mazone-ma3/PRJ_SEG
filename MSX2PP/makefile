@@ -25,7 +25,7 @@ all: $(TARGET).com
 # 2. DOS用COM生成ルール
 $(TARGET).com: $(OBJS)
 #	$(CC) $(LDFLAGS) -subtype=msxdos -lndos -o $(TARGET).com $(OBJS)
-	$(CC) $(LDFLAGS) -o $(TARGET).com $(OBJS)
+	$(CC) $(LDFLAGS) -o $(TARGET).com $(OBJS) -m
 
 # 3. (おまけ) ROMファイルやBINも作りたい場合
 #rom: $(OBJS)
