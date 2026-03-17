@@ -2373,9 +2373,6 @@ int	main(int argc,char **argv)
 		do{
 			keyscan();
 		}while(keycode & (KEY_A | KEY_START));
-		DI();
-		pal_all(CHRPAL_NO, org_pal);
-		EI();
 		errlv = ERRLV1;
 
 		j = 0;
@@ -2385,32 +2382,13 @@ int	main(int argc,char **argv)
 		DI();
 		set_int3();
 		write_VDP(0, vdp_value[0] | 0x10);
+		pal_all(CHRPAL_NO, org_pal);
 		EI();
 		do{
 			if(vsync_flag){
-//				j = 0;
-//				++k;
-//				k %= 256;
 				vsync_flag = 0;
 				++h_pos;
 			}
-/*
-			for(i = 0; i < 212; ++i){
-//			if((read_VDPstatus(1) & 0x01)){
-
-			if(!(read_VDPstatus(2) & 0x40)){
-				while((read_VDPstatus(2) & 0x20));
-				while(!read_VDPstatus(2) & 0x20);
-				{
-					write_VDP(27, sin_table[j+k]/2);
-					j+=4;
-//					if(j > 212)
-//						j = 0;
-//					write_VDP(19,j);
-				}
-			}
-			}
-*/
 			keyscan();
 			if(!(get_key(7) & 0x04) || (keycode & KEY_B)){
 				errlv = SYSEXIT;
@@ -2420,6 +2398,8 @@ int	main(int argc,char **argv)
 		DI();
 			write_VDP(0, vdp_value[0]);
 			reset_int2();
+			write_VDP(26, 0);
+			write_VDP(27, 0);
 		EI();
 
 /*		put_strings(SCREEN2, 8, 4, "               ", REVRPAL_NO);
@@ -2763,23 +2743,10 @@ __asm
 	ld	c,a
 	in a,(c)
 
-	push	af
-
-	ld	a,(_VDP_writeadr)
-	inc	a
-	ld	c,a
-
-	ld	a,0
-	out	(c),a
-	ld	a,15 | 080h
-	out	(c),a
-
-	pop	af
-
 	rrca
-	jr	nc,INTWORK2
+	jr	nc,hsyncend
 ;	and	a,00000001b	; HSYNC_FLAG
-;	jr	z,INTWORK2
+;	jr	z,hsyncend
 
 	ld	hl,_hsync_line
 	ld	a,(hl)
@@ -2792,7 +2759,6 @@ hsyncskip1:
 	ld	l,a
 	out	(c),a
 	ld	a,19 | 080h
-;	set 7,a
 	out	(c),a
 
 	ld	h,0
@@ -2854,6 +2820,15 @@ hsyncloop2:
 ;	out	(c),a
 
 
+hsyncend:
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+
+	ld	a,0
+	out	(c),a
+	ld	a,15 | 080h
+	out	(c),a
 
 INTWORK2:
 	DB	0,0,0,0,0
