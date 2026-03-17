@@ -2396,10 +2396,10 @@ int	main(int argc,char **argv)
 			}
 		}while(!(keycode & (KEY_A | KEY_START)));
 		DI();
-			write_VDP(0, vdp_value[0]);
-			reset_int2();
-			write_VDP(26, 0);
-			write_VDP(27, 0);
+		write_VDP(0, vdp_value[0]);
+		reset_int2();
+		write_VDP(26, 0);
+		write_VDP(27, 0);
 		EI();
 
 /*		put_strings(SCREEN2, 8, 4, "               ", REVRPAL_NO);
