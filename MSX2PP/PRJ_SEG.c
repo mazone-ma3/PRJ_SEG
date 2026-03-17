@@ -2,7 +2,10 @@
 
 #include <string.h>
 
+#include "sin.h"
+
 #define MAIN
+#define SCREEN1 1
 //#define MSX2
 
 //#define DEBUG
@@ -28,6 +31,9 @@ void write_vram_adr(unsigned char highadr, int lowadr) __sdcccall(1);
 
 void set_int(void);
 void reset_int(void);
+void set_int2(void);
+void set_int3(void);
+void reset_int2(void);
 
 #define DI() {\
 __asm\
@@ -55,6 +61,8 @@ void DEF_SP_DOUBLE(void);
 void DEF_SP_FUNC(short X, short Y, unsigned char pat, unsigned char chrnum, unsigned char sprpal_no)  __sdcccall(1) ;
 
 unsigned char spr_count = 0, tmp_spr_count = 0, old_count[2] = {0, 0};
+volatile unsigned char vsync_flag = 0;
+unsigned char h_pos = 0, hsync_line = 0;
 
 void put_my_hp_dmg(void);
 void game_put(void);
@@ -1587,6 +1595,12 @@ short soundflag = FALSE;
 
 char chr;
 
+void put_strings_sprite(unsigned char x, unsigned char y, unsigned char pat, unsigned char len)
+{
+	for(i = 0; i < (len+1)/2; ++i)
+		DEF_SP_SINGLE_MACRO(spr_count, (x*8+i*16 - SPR_OFS_X) << SHIFT_NUM, (y*8 - SPR_OFS_Y) << SHIFT_NUM_Y, pat*16+i, CHRPAL_NO);
+}
+
 void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str, unsigned char pal)
 {
 //	y = 28-y;
@@ -1600,11 +1614,11 @@ void put_strings(unsigned char scr, unsigned char x, unsigned char y,  char *str
 	else
 		VPAGE = 3;
 
-	if(pal == CHRPAL_NO)
+//	if(pal == CHRPAL_NO)
 		VDPcommand = HMMM;
-	else{
-		VDPcommand = LMMM | R_TIMP;
-	}
+//	else{
+//		VDPcommand = LMMM | R_TIMP;
+//	}
 
 	while(1){
 		chr = *(str++);
@@ -1666,8 +1680,15 @@ void hiscore_display(void)
 
 	put_numd(hiscore, 7);
 
-	put_strings(SCREEN2, 9, 12, "HIGH", REVPAL_NO);
-	put_strings(SCREEN2, 9 + 5, 12, str_temp, REVPAL_NO);
+//	put_strings(SCREEN2, 9, 12, "HIGH", REVPAL_NO);
+//	put_strings(SCREEN2, 9 + 5, 12, str_temp, REVPAL_NO);
+
+//	put_strings(SCREEN1, 0, 6*2, "PROJECT SEGRETA", REVPAL_NO);
+	put_strings(SCREEN1, 0, 10*2, "HIGH", REVPAL_NO);
+	put_strings_sprite(9, 12, 10, 15);
+
+	put_strings(SCREEN1, 0, 11*2, str_temp, REVPAL_NO);
+	put_strings_sprite((9 + 5), 12, 11, 7);
 }
 
 unsigned char st0, st1, pd0, pd1, pd2, k3, k5, k7, k9, k10;
@@ -2334,28 +2355,72 @@ int	main(int argc,char **argv)
 //		init_star();
 		wait_vsync();
 
+		tmp_spr_count = 0;
 		hiscore_display();
-		put_strings(SCREEN2, 8, 4, "PROJECT SEGRETA", REVPAL_NO);
-		put_strings(SCREEN2, 9, 14, "PUSH A BUTTON", REVPAL_NO);
-		put_strings(SCREEN2, 9, 23, "      i  k   ", REVPAL_NO);
-		put_strings(SCREEN2, 9, 24, " 2026 bcdefgh", REVPAL_NO);
-		DI();
-		pal_all(CHRPAL_NO, org_pal);
-		EI();
+		put_strings(SCREEN1, 0, 6*2, "PROJECT SEGRETA", REVPAL_NO);
+		put_strings_sprite(8, 4, 6, 15);
+
+		put_strings(SCREEN1, 0, 7*2, "PUSH A BUTTON", REVPAL_NO);
+		put_strings_sprite(9, 14, 7, 13);
+
+		put_strings(SCREEN1, 0, 8*2, "      i  k   ", REVPAL_NO);
+		put_strings_sprite(8, 23, 8, 13);
+
+		put_strings(SCREEN1, 0, 9*2, " 2026 bcdefgh", REVPAL_NO);
+		put_strings_sprite(8, 24, 9, 13);
+
+		set_sprite();
 		do{
 			keyscan();
 		}while(keycode & (KEY_A | KEY_START));
+		DI();
+		pal_all(CHRPAL_NO, org_pal);
+		EI();
 		errlv = ERRLV1;
+
+		j = 0;
+		k = 0;
+		wait_vsync();
+
+		DI();
+		set_int3();
+		write_VDP(0, vdp_value[0] | 0x10);
+		EI();
 		do{
+			if(vsync_flag){
+//				j = 0;
+//				++k;
+//				k %= 256;
+				vsync_flag = 0;
+				++h_pos;
+			}
+/*
+			for(i = 0; i < 212; ++i){
+//			if((read_VDPstatus(1) & 0x01)){
+
+			if(!(read_VDPstatus(2) & 0x40)){
+				while((read_VDPstatus(2) & 0x20));
+				while(!read_VDPstatus(2) & 0x20);
+				{
+					write_VDP(27, sin_table[j+k]/2);
+					j+=4;
+//					if(j > 212)
+//						j = 0;
+//					write_VDP(19,j);
+				}
+			}
+			}
+*/
 			keyscan();
 			if(!(get_key(7) & 0x04) || (keycode & KEY_B)){
 				errlv = SYSEXIT;
 				break;
 			}
 		}while(!(keycode & (KEY_A | KEY_START)));
-		do{
-			keyscan();
-		}while(keycode & (KEY_A | KEY_START));
+		DI();
+			write_VDP(0, vdp_value[0]);
+			reset_int2();
+		EI();
 
 /*		put_strings(SCREEN2, 8, 4, "               ", REVRPAL_NO);
 		put_strings(SCREEN2, 9, 14, "             ", REVPAL_NO);
@@ -2363,7 +2428,12 @@ int	main(int argc,char **argv)
 		put_strings(SCREEN2, 9, 23, "             ", REVPAL_NO);
 		put_strings(SCREEN2, 9, 24, "             ", REVPAL_NO);
 */
+		spr_clear();
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
+
+		do{
+			keyscan();
+		}while(keycode & (KEY_A | KEY_START));
 
 		if((errlv == SYSERR) || (errlv == SYSEXIT))
 			break;
@@ -2673,6 +2743,122 @@ __endasm;
 	return 0;
 }
 
+void inthsync(void)
+{
+__asm
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+	inc	a
+	inc	a
+	ld	b,a
+
+	ld	a,1
+	out	(c),a
+	ld	a,15 | 080h
+	out	(c),a
+
+	ld	a,(_VDP_readadr)
+	inc	a
+	ld	c,a
+	in a,(c)
+
+	push	af
+
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+
+	ld	a,0
+	out	(c),a
+	ld	a,15 | 080h
+	out	(c),a
+
+	pop	af
+
+	rrca
+	jr	nc,INTWORK2
+;	and	a,00000001b	; HSYNC_FLAG
+;	jr	z,INTWORK2
+
+	ld	hl,_hsync_line
+	ld	a,(hl)
+	add	a,6
+	cp	211
+	jr	c,hsyncskip1
+	xor	a
+hsyncskip1:
+	ld	(hl),a
+	ld	l,a
+	out	(c),a
+	ld	a,19 | 080h
+;	set 7,a
+	out	(c),a
+
+	ld	h,0
+
+	ld	a,(_h_pos)
+	ld	e,a
+	ld	d,0
+	add	hl,de
+
+	ld	de,_sin_table
+	add	hl,de
+	ld	a,(hl)
+	ld	e,a
+
+
+
+	and	0000111b
+	ld	d,a
+
+	ld	a,255
+	sub	a,e
+	srl	a
+	srl	a
+	srl	a
+	ld	e,a
+
+	ld	a,26
+	out	(c),a
+	ld	a,17 | 0080h
+	out	(c),a
+
+
+	ld	a,2
+	out	(c),a
+	ld	a,15 | 080h
+	out	(c),a
+
+hsyncloop1:
+	in	a,(c)
+	and	00100000b
+	jr	nz,hsyncloop1
+hsyncloop2:
+	in	a,(c)
+	and	00100000b
+	jr	z,hsyncloop2
+
+	ld	c,b
+
+	ld	a,e
+	out	(c),a
+
+;	ld	a,26 | 0080h
+;	out	(c),a
+
+	ld	a,d
+	out	(c),a
+
+;	ld	a,27 | 0080h
+;	out	(c),a
+
+
+
+INTWORK2:
+	DB	0,0,0,0,0
+__endasm;
+}
 
 void intvsync(void)
 {
@@ -2682,7 +2868,7 @@ __asm
 	push	af
 ;	push	ix
 __endasm;
-
+	vsync_flag = 1;
 	if(spr_flag == 1){
 		spr_flag = 0;
 //		set_spr_atr_adr(spr_next); 
@@ -2752,6 +2938,73 @@ __endasm;
 #endif
 }
 
+void set_int3(void)
+{
+__asm
+	DI
+
+	LD	IY,0FD9AH
+	PUSH	IY
+	POP	HL
+	LD	DE,INTWORK2
+	LD	BC,5
+	LDIR
+
+	LD	HL,_inthsync
+	LD	(IY+0),0c3h
+	LD	(IY+1),L
+	LD	(IY+2),H
+
+	EI
+__endasm;
+}
+
+void set_int2(void)
+{
+//#ifndef SINGLEMODE
+__asm
+	DI
+;	PUSH	IY
+;	PUSH	HL
+;	PUSH	DE
+;	PUSH	BC
+	LD	IY,0FD9AH
+	PUSH	IY
+	POP	HL
+	LD	DE,INTWORK2
+	LD	BC,5
+	LDIR
+
+	LD	HL,_inthsync
+	LD	(IY+2),L
+	LD	(IY+3),H
+	LD	(IY+0),0F7H
+	LD	(IY+4),0C9H
+
+	ld	a,h
+	ld	hl,#0xf341	;slot0
+	cp	#0x40
+	jr	c,slotset2
+	inc	hl			;slot1
+	cp	#0x80
+	jr	c,slotset2
+	inc	hl			;slot2
+	cp	#0xc0
+	jr	c,slotset2
+	inc	hl			;slot3
+slotset2:
+	LD	A,(HL)
+	LD	(IY+1),A
+
+;	POP	BC
+;	POP	DE
+;	POP	HL
+;	POP	IY
+	EI
+__endasm;
+//#endif
+}
+
 void reset_int(void)
 {
 #ifndef SINGLEMODE
@@ -2764,4 +3017,18 @@ __asm
 	EI
 __endasm;
 #endif
+}
+
+void reset_int2(void)
+{
+//#ifndef SINGLEMODE
+__asm
+	DI
+	LD	HL,INTWORK2
+	LD	DE,0FD9AH
+	LD	BC,5
+	LDIR
+	EI
+__endasm;
+//#endif
 }
