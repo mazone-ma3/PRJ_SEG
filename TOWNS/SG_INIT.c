@@ -283,6 +283,15 @@ void paint2(unsigned short pat)
 	unsigned short i, j, k, l;
 	register volatile short rdx asm ("dx");
 	register volatile short *rebx asm ("ebx");
+	char spr_pat[8][16];
+
+	spram = 0x4000 + pat * 16*8;
+	for(k = 0; k < 16; ++k){
+		for(l = 0; l < 8; ++l){
+			spr_pat[l][k] = _peek_byte(0x130, spram);
+			spram += 1;
+		}
+	}
 
 asm volatile(
 	"push  %es\n"
@@ -295,18 +304,16 @@ asm volatile(
 		for (j = 16; j < (160-16); j+=8){
 //		for (j = 32; j < (320-32); j+=16){
 
-			spram = 0x4000 + pat * 16*8;
 			for(k = 0; k < 16; ++k){
 				for(l = 0; l < 8; ++l){
 //					VRAM_putPixelB(((j+l) + (i+k) * 512 + 32 * 0) / 1, _peek_byte(0x130, spram));
-					rdx = _peek_byte(0x130, spram);
+					rdx = spr_pat[l][k];
 					rebx = ((j+l) + (i+k) * 512 + 32 * 0) / 1;
 asm volatile(
 	"movb	%%dx,%%es:(%%ebx)\n"
 	:
 	:"r"(rebx),"r"(rdx)
 );
-					spram += 1;
 				}
 			}
 		}
