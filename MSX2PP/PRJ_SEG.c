@@ -2796,6 +2796,10 @@ hsyncskip1:
 	ld	a,15 | 080h
 	out	(c),a
 
+	ld	a,(_VDP_readadr)
+	inc	a
+	ld	c,a
+
 hsyncloop1:
 	in	a,(c)
 	and	00100000b
