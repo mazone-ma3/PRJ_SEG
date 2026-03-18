@@ -202,6 +202,11 @@ void  __attribute__((interrupt))int_fm(void)
 
 //	disable();
 	set_fm(0x14, 0x2a);
+	/* IERƒIƒt */
+	asm(
+		"lea	0x0e88009,%a0\n"
+		"bclr	#0x3,(%a0)\n"
+	);
 	enable();
 
 
@@ -311,6 +316,12 @@ playend:
 playend2:
 //	enable();
 //	playflag = 0;
+	disable();
+	/* IERƒIƒ“ */
+	asm(
+		"lea	0x0e88009,%a0\n"
+		"bset	#0x3,(%a0)\n"
+	);
 }
 
 static volatile uint8_t s_mfpBackup[0x18] = {

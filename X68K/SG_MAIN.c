@@ -23,6 +23,11 @@ enum {
 	SEMAX = 4
 };
 
+/* äÑÇËçûÇ› off */
+#define disable() asm volatile("ori.w	#0x0700,%sr\n")
+/* äÑÇËçûÇ› on */
+#define enable() asm volatile("andi.w	#0x0f8ff,%sr\n")
+#define nop() asm volatile("nop\n")
 
 void wait_vsync(void);
 void put_numd(long j, char digit);
@@ -694,8 +699,13 @@ void  __attribute__((interrupt)) int_vsync(void)
 //	);
 //	++score;
 //	scrdspflag =TRUE;
-	/* äÑÇËçûÇ› on */
-	asm volatile("andi.w	#0x0f8ff,%sr\n");
+
+	/* IERÉIÉt */
+	asm(
+		"lea	0x0e88009,%a0\n"
+		"bclr	#0x6,(%a0)\n"
+	);
+	enable();
 
 	vsync_flag = 1;
 
@@ -706,6 +716,14 @@ void  __attribute__((interrupt)) int_vsync(void)
 		spram = (unsigned short *)0xeb0000;
 		memcpy(spram, chr_data2[spr_next], MAX_SPRITE * 4 * 2);
 	}
+
+	disable();
+	/* IERÉIÉì */
+	asm(
+		"lea	0x0e88009,%a0\n"
+		"bset	#0x6,(%a0)\n"
+	);
+
 }
 
 #endif
