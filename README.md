@@ -1,6 +1,8 @@
 # PRJ_SEG
 シューティングゲーム　Project Segreta(セグレタ)
 
+![pyxel-20260319-080219](https://github.com/user-attachments/assets/fe0b5749-2448-4808-88f3-81553c2dcb0f)
+
 開発中です。PRJ_RAINを下敷きにしています。実機での動作は未検証未保証です。
 
 ※MSX2++(V9968)版は2025/1/26以前の版のz88dkでコンパイルして下さい。BGM用のファイルが正常に読めません。
@@ -66,6 +68,3 @@ PC-88VA やらない
 MSX2++ 検討はする
 
 その他　やらない
-
-![pyxel-20260319-080219](https://github.com/user-attachments/assets/fe0b5749-2448-4808-88f3-81553c2dcb0f)
-
