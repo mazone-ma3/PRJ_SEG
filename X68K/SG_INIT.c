@@ -56,6 +56,7 @@ unsigned char playbuffer[MAX_MCD_SIZE];
 unsigned char pcmbuffer[MAX_PCM_SIZE];
 
 int playmode = 0;
+int argc_value = 0;
 
 unsigned char org_pal[16][3] = {
 	{  0,  0,  0},
@@ -585,6 +586,7 @@ int	main(int argc,char **argv){
 
 dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 
+	argc_value = argc;
 	mcd_filename = "C_1_68.MDC";	/* 引数がなかった場合 */
 
 /* 実行時引数が設定されているかどうか調べる */
@@ -756,9 +758,9 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 		pal_all(REVPAL_NO, rev_pal);
 
 #ifndef XSP
-			if(init_raster()){
-				goto end;
-			}
+		if(init_raster()){
+			goto end;
+		}
 #endif
 
 		do{
@@ -842,10 +844,14 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 */
 
 #ifndef XSP
-//			if(init_raster()){
-//				stop_fmdbgm();
-//				goto end;
-//			}
+			if(argc >= 2){
+				if(init_raster()){
+					if(!playmode){
+						stop_fmdbgm();
+					}
+					goto end;
+				}
+			}
 #endif
 			errlv = game_run(errlv);
 
@@ -854,7 +860,9 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 /*				mcd_release();*/
 			}
 			if(errlv == SYSEXIT){
-//				reset_raster();
+				if(argc >= 2){
+					reset_raster();
+				}
 				if(!playmode)
 					stop_fmdbgm();
 				break;
@@ -870,7 +878,9 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			}
 
 #ifndef XSP
-//			reset_raster();
+		if(argc >= 2){
+			reset_raster();
+		}
 #endif
 
 			if(!playmode)

@@ -385,6 +385,9 @@ void do_put_stage(unsigned char no)
 	unsigned char x,y;
 	unsigned short *bgram;
 
+	if(argc_value > 2)
+		return;
+
 	no %= 4;
 
 	for(y = 0; y < 32; y+=2){

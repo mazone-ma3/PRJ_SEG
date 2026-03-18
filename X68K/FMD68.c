@@ -15,6 +15,12 @@
 
 #define IOCS
 
+/* 割り込み off */
+#define disable() asm volatile("ori.w	#0x0700,%sr\n")
+/* 割り込み on */
+#define enable() asm volatile("andi.w	#0x0f8ff,%sr\n")
+#define nop() asm volatile("nop\n")
+
 FILE *fmdstream[2];
 
 #define ERROR 1
@@ -138,8 +144,12 @@ void set_tone(int no, int ch)
 /* 音階設定 */
 void set_key(int no, int ch)
 {
+//	disable();
 	set_fm(0x28 + ch, key_table[no]);
+//	enable();
+//	disable();
 	set_fm(0x30 + ch, 5);
+//	enable();
 }
 
 char key[8] = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -164,11 +174,14 @@ void  __attribute__((interrupt))int_fm(void)
 
 	/* 念のため明示的にIRQリセット（YM2151のレジスタ$04に0x80書き込みでIRQフラグクリア） */
 	set_fm(0x04, 0x80);	// IRQフラグ & Timerフラグを強制クリア（安全策）
+	enable();
 
-	/* 割り込み on */
-	asm volatile("andi.w	#0x0f8ff,%sr\n");
+//	nop();
 
+//	disable();
 	set_fm(0x14, 0x2a);
+//	enable();
+
 	if(playflag)
 		return;
 	else
@@ -206,7 +219,9 @@ playloop2:
 					case 225:	/* 直接出力 Y */
 						ch = mem[--OFFSET[i]];
 						no = mem[--OFFSET[i]];
+						disable();
 						set_fm(ch, no);
+						enable();
 						break;
 					case 255:	/* ループ */
 						OFFSET[i] = STARTADR[i] + 1;
@@ -221,10 +236,14 @@ playloop2:
 					default:
 						/* 演奏 */
 						STOPFRG[i] = data & 0x7f;
+						disable();
 						set_fm(0x08, 0x00 | key[i]);	/* off */
+						enable();
 						if((data & 0x7f) != 0){
 							set_key((data & 0x7f) - 1, i);	/* key */
+							disable();
 							set_fm(0x08, 0xf0 | key[i]);	/* on */
+							enable();
 						}
 						if(data & 0x80){	/* 音長が設定されている */
 							data = LENGTH[i];
@@ -271,7 +290,7 @@ playend:
 	}
 	ENDFRG = 0;
 playend2:
-//	asm volatile("andi.w	#0x0f8ff,%sr\n");
+//	enable();
 	playflag = 0;
 }
 
@@ -284,8 +303,7 @@ static volatile uint32_t s_uspBackup = 0;
 int init_sndint(void)
 {
 	int ret = 0;
-	/* 割り込み off */
-	asm volatile("ori.w	#0x0700,%sr\n");
+	disable();
 
 #ifdef DEBUG
 	ret = _iocs_opmintst(int_fm);
@@ -331,15 +349,13 @@ int init_sndint(void)
 	ret = _iocs_opmintst(int_fm);
 #endif
 
-
-	/* 割り込み on */
-	asm volatile("andi.w	#0x0f8ff,%sr\n");
+	enable();
 	return ret;
 }
 
 void reset_sndint(void)
 {
-	asm volatile("ori.w	#0x0700,%sr\n");
+	disable();
 
 #ifdef DEBUG
 	_iocs_opmintst (0);
@@ -398,7 +414,7 @@ void reset_sndint(void)
 #else
 	_iocs_opmintst (0);
 #endif
-	asm volatile("andi.w	#0x0f8ff,%sr\n");
+	enable();
 }
 
 void stop(void)

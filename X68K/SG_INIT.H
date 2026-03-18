@@ -22,4 +22,7 @@ extern char SNDBUFF[4][SND_BUFFSIZE];
 extern long pcmsize[4]; 
 extern long mcd_status;
 
+extern int argc_value;
+
+
 #endif
