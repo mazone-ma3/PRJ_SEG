@@ -762,6 +762,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			goto end;
 		}
 #endif
+//		*(unsigned short *)(0xe82202) = 0xffff;
 
 		do{
 			keycode = keyscan();

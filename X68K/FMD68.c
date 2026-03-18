@@ -304,7 +304,7 @@ playend:
 			goto playloop;	/* ループ回数が0以外ならループ */
 		}
 		/* 演奏自己停止 */
-		*(unsigned short *)(0xe82000) = 1;
+		*(unsigned short *)(0xe82202) = 0xffff;
 		stop();
 	}
 	ENDFRG = 0;
