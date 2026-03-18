@@ -55,6 +55,8 @@ unsigned char playbuffer[MAX_MCD_SIZE];
 
 unsigned char pcmbuffer[MAX_PCM_SIZE];
 
+int playmode = 0;
+
 unsigned char org_pal[16][3] = {
 	{  0,  0,  0},
 	{  0,  0,  0},
@@ -824,7 +826,7 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 				mcd_play();
 //	pcm_play(&SNDBUFF[0][0], pcmsize[0]);
 			}
-			play_fmdbgm();
+			playmode = play_fmdbgm();
 
 /*			for(i = 0; i < 192 + 16; i += 8){
 				wait_vsync();
@@ -853,7 +855,8 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 			}
 			if(errlv == SYSEXIT){
 //				reset_raster();
-				stop_fmdbgm();
+				if(!playmode)
+					stop_fmdbgm();
 				break;
 			}
 			if(errlv != NOERROR){
@@ -870,7 +873,8 @@ dum:	_iocs_b_super(0);		/* スーパーバイザモード 最適化防止にラベルを付ける */
 //			reset_raster();
 #endif
 
-			stop_fmdbgm();
+			if(!playmode)
+				stop_fmdbgm();
 //			fadeoutwhite(org_pal, CHRPAL_NO, 10);
 		}
 		wait_vsync();

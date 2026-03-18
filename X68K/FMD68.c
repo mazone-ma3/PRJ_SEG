@@ -441,7 +441,7 @@ void load_fmdbgm(char *filename)
 		exit(1);
 }
 
-void play_fmdbgm(void)
+int play_fmdbgm(void)
 {
 	unsigned short no = 0;
 	unsigned char i, ch = 0;
@@ -474,8 +474,12 @@ void play_fmdbgm(void)
 	set_fm(0x12, 191);
 
 	if(init_sndint())
-		exit(1);
+//		exit(1);
+		return 1;
+	playflag = 0;
 	set_fm(0x14, 0x2a);
+
+	return 0;
 }
 //	getchar();
 
