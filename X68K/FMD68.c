@@ -117,15 +117,29 @@ void set_tone(int no, int ch)
 	for(i = 0; i < 4; ++i){
 		j = ch + op[i] * 8;
 		k = i * 11;
+//		disable();
 		set_fm(0x40 + j, tone_table[no][MUL + k] | tone_table[no][DT1 + k] * 16);
+//		enable();
+//		disable();
 		set_fm(0x60 + j, tone_table[no][TL + k]);
+//		enable();
+//		disable();
 		set_fm(0x80 + j, tone_table[no][AR + k] | tone_table[no][KS + k] * 64);
+//		enable();
+//		disable();
 		set_fm(0xa0 + j, tone_table[no][D1R + k] | tone_table[no][AME + k] * 128);
+//		enable();
+//		disable();
 		set_fm(0xc0 + j,tone_table[no][D2R + k] | tone_table[no][DT2 + k] * 64);
+//		enable();
+//		disable();
 		set_fm(0xe0 + j, tone_table[no][RR + k] | tone_table[no][D1L + k] * 16);
+//		enable();
 	}
 	j = 0x20 + ch;
+//	disable();
 	set_fm(j, tone_table[no][CON] | tone_table[no][FL] * 8 | 0xc0);
+//	enable();
 
 /*
 	for(i = 0; i < 4; ++i){
@@ -144,12 +158,15 @@ void set_tone(int no, int ch)
 /* 音階設定 */
 void set_key(int no, int ch)
 {
+	volatile unsigned char key = key_table[no];
 //	disable();
-	set_fm(0x28 + ch, key_table[no]);
+	set_fm(0x28 + ch, key);
 //	enable();
+//	nop();
 //	disable();
 	set_fm(0x30 + ch, 5);
 //	enable();
+//	nop();
 }
 
 char key[8] = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -157,7 +174,7 @@ char key[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 void stop(void);
 
-volatile unsigned char playflag = 0;
+//volatile unsigned char playflag = 0;
 
 //void  __attribute__((interrupt))int_fm(void)
 //{
@@ -169,23 +186,24 @@ void  __attribute__((interrupt))int_fm(void)
 	unsigned char data;
 	volatile unsigned char status;
 
+//	if(playflag)
+//		return;
+//	else
+//		playflag = 1;
+
 	/* YM2151 ステータス読み出し → タイマーフラグ自動クリア + IRQフラグもクリアされる */
 	status = *port2;	// $E90003 を読む（これだけでTimerフラグがリセットされる場合が多い）
 
 	/* 念のため明示的にIRQリセット（YM2151のレジスタ$04に0x80書き込みでIRQフラグクリア） */
-	set_fm(0x04, 0x80);	// IRQフラグ & Timerフラグを強制クリア（安全策）
-	enable();
+//	set_fm(0x04, 0x80);	// IRQフラグ & Timerフラグを強制クリア（安全策）
+//	enable();
 
 //	nop();
 
 //	disable();
 	set_fm(0x14, 0x2a);
-//	enable();
+	enable();
 
-	if(playflag)
-		return;
-	else
-		playflag = 1;
 
 playloop:
 playloop2:
@@ -219,9 +237,9 @@ playloop2:
 					case 225:	/* 直接出力 Y */
 						ch = mem[--OFFSET[i]];
 						no = mem[--OFFSET[i]];
-						disable();
+//						disable();
 						set_fm(ch, no);
-						enable();
+//						enable();
 						break;
 					case 255:	/* ループ */
 						OFFSET[i] = STARTADR[i] + 1;
@@ -236,14 +254,14 @@ playloop2:
 					default:
 						/* 演奏 */
 						STOPFRG[i] = data & 0x7f;
-						disable();
+//						disable();
 						set_fm(0x08, 0x00 | key[i]);	/* off */
-						enable();
+//						enable();
 						if((data & 0x7f) != 0){
 							set_key((data & 0x7f) - 1, i);	/* key */
-							disable();
+//							disable();
 							set_fm(0x08, 0xf0 | key[i]);	/* on */
-							enable();
+//							enable();
 						}
 						if(data & 0x80){	/* 音長が設定されている */
 							data = LENGTH[i];
@@ -286,12 +304,13 @@ playend:
 			goto playloop;	/* ループ回数が0以外ならループ */
 		}
 		/* 演奏自己停止 */
+		*(unsigned short *)(0xe82000) = 1;
 		stop();
 	}
 	ENDFRG = 0;
 playend2:
 //	enable();
-	playflag = 0;
+//	playflag = 0;
 }
 
 static volatile uint8_t s_mfpBackup[0x18] = {
@@ -492,7 +511,7 @@ int play_fmdbgm(void)
 	if(init_sndint())
 //		exit(1);
 		return 1;
-	playflag = 0;
+//	playflag = 0;
 	set_fm(0x14, 0x2a);
 
 	return 0;
