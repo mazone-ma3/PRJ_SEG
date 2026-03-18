@@ -147,7 +147,7 @@ char key[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 void stop(void);
 
-unsigned char count = 0;
+volatile unsigned char playflag = 0;
 
 //void  __attribute__((interrupt))int_fm(void)
 //{
@@ -169,6 +169,10 @@ void  __attribute__((interrupt))int_fm(void)
 	asm volatile("andi.w	#0x0f8ff,%sr\n");
 
 	set_fm(0x14, 0x2a);
+	if(playflag)
+		return;
+	else
+		playflag = 1;
 
 playloop:
 playloop2:
@@ -268,6 +272,7 @@ playend:
 	ENDFRG = 0;
 playend2:
 //	asm volatile("andi.w	#0x0f8ff,%sr\n");
+	playflag = 0;
 }
 
 static volatile uint8_t s_mfpBackup[0x18] = {
