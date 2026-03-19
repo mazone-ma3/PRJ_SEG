@@ -220,7 +220,7 @@ void combo_display(void)
 {
 	put_numd(combo, 3);
 	put_strings(SCREEN2, 16+7, 0 , str_temp, CHRPAL_NO);
-		put_strings(SCREEN2, 16, 0, "COMBO", CHRPAL_NO);
+	put_strings(SCREEN2, 16, 0, "COMBO", CHRPAL_NO);
 }
 
 void combo_display_clear(void)
@@ -1308,6 +1308,11 @@ void com_putstage(void)//(unsigned char i)
 		score_displayall();
 		put_strings(SCREEN2, 0, 25, "LIFE", CHRPAL_NO);
 		put_my_hp_dmg();
+		if(combo){
+			combo_display();
+		}/*else{
+			combo_display_clear();
+		}*/
 #endif
 	}
 }

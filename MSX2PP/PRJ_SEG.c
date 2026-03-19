@@ -1118,11 +1118,11 @@ void boxfill(int dx, int dy, int nx, int ny, unsigned char dix, unsigned char di
 	outp(port, dx & 0xff);
 	outp(port, (dx >> 8) & 0x01);
 	outp(port, dy & 0xff);
-	outp(port, (dy >> 8) & 0x03);
+	outp(port, (dy >> 8) & 0x07);
 	outp(port, nx & 0xff);
 	outp(port, (nx >> 8) & 0x01);
 	outp(port, ny & 0xff);
-	outp(port, (ny >> 8) & 0x03);
+	outp(port, (ny >> 8) & 0x07);
 	outp(port, data);
 	outp(port, ((diy << 3) & 0x80) | ((diy << 2) & 0x40));
 	outp(port, HMMV);
@@ -2407,6 +2407,8 @@ int	main(int argc,char **argv)
 		wait_vsync();
 //		pal_allblack(CHRPAL_NO);
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
+//		boxfill(0, 256*4, 256, 212, 0, 0, 0x00);
+		do_put_stage(0);
 
 		sx = 0;
 		sy = 0; // + 512;
@@ -2898,7 +2900,7 @@ hsyncend:
 	inc	a
 	ld	c,a
 
-	ld	a,0
+	xor	a
 	out	(c),a
 	ld	a,15 | 080h
 	out	(c),a
