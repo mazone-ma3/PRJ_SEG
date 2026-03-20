@@ -115,7 +115,7 @@ typedef struct {
 
 COLIGION hantei[2] = {
 	CLGN(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
-	CLGN(TK_OFS_X, TK_OFS_Y, TK_SIZE_X, TK_SIZE_Y),
+	CLGN(BOSS_OFS_X, BOSS_OFS_Y, BOSS_SIZE_X, BOSS_SIZE_Y),
 };
 
 COLIGION hantei_d[2] = {
