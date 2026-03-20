@@ -2391,9 +2391,9 @@ int	main(int argc,char **argv)
 //		write_VDP(1, vdp_value[1] & 0xdf); // IE=0;
 		VDP_readadr = VDP_writeadr = 0x88;
 
+		write_VDP(1, 0x02); // Mode 1 IE=0
 		write_VDP(0, 0x06); // Mode 0
 //		write_VDP(1, 0x62); // Mode 1 IE=1
-		write_VDP(1, 0x42); // Mode 1 IE=0
 		write_VDP(8, 0x0a); // Mode 2
 		write_VDP(9, 0x88); // Mode 3
 
@@ -2420,10 +2420,13 @@ int	main(int argc,char **argv)
 	write_VDP(20, 0xff);	/* V9968Šg’£ */
 	write_VDP(6, 0x30);		/* V9968 SPMode3 SpritePatternGeneratoriTable */
 
-	pal_set(1, 0, 0, 0, 0);
-	for(i = 1; i < MAXCOLOR; i++)
+	write_VDP(21,0);
+	if((read_VDPstatus(1) & 0x3e) == 0x06){
+		pal_set(1, 0, 0, 0, 0);
+		for(i = 1; i < MAXCOLOR; i++)
 //		pal_set(pal_no, i, color[i][0]/2, color[i][1]/2, color[i][2]/2);
-		pal_set(1, i, 31, 0, 0);
+			pal_set(1, i, 31, 0, 0);
+	}
 
 	spr_on();
 //	boxfill(0, 256, 256, 212, 0, 0, 0x00);
@@ -2437,9 +2440,10 @@ int	main(int argc,char **argv)
 	old_jiffy = *jiffy;
 
 	do{
-		wait_vsync();
-//		pal_allblack(CHRPAL_NO);
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
+		if (argc >= 2){
+			write_VDP(1, 0x42); // Mode 1 IE=0
+		}
 //		boxfill(0, 256*4, 256, 212, 0, 0, 0x00);
 		do_put_stage(0);
 
@@ -2471,7 +2475,7 @@ int	main(int argc,char **argv)
 		EI();
 
 //		init_star();
-		wait_vsync();
+//		wait_vsync();
 
 		tmp_spr_count = 0;
 		hiscore_display();
@@ -2495,7 +2499,7 @@ int	main(int argc,char **argv)
 
 		j = 0;
 		k = 0;
-		wait_vsync();
+//		wait_vsync();
 
 		DI();
 		set_int3();
@@ -2504,7 +2508,10 @@ int	main(int argc,char **argv)
 		}else{
 			write_VDP(0, 0x06 | 0x10);
 		}
-		pal_all(CHRPAL_NO, org_pal);
+		if((read_VDPstatus(1) & 0x3e) == 0x06){
+			wait_vsync();
+			pal_all(CHRPAL_NO, org_pal);
+		}
 		EI();
 		do{
 			if(vsync_flag){
