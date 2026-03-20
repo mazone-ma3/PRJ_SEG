@@ -1505,12 +1505,32 @@ void pal_set(unsigned char pal_no, unsigned char color, unsigned char red, unsig
 	outp(port, blue);
 }
 
+void pal_set2(unsigned char pal_no, unsigned char color, unsigned char red, unsigned char green,
+	unsigned char blue)
+{
+	unsigned char port = VDP_writeport(VDP_WRITEPAL);
+	write_VDP(16, color);
+	outp(port, red * 16 | blue);
+	outp(port, green);
+//	outp(port, red);	/* V9968 EPAL=ON */
+//	outp(port, green);
+//	outp(port, blue);
+}
+
 void pal_all(unsigned char pal_no, unsigned char color[MAXCOLOR][3])
 {
 	unsigned short i;
 	for(i = 0; i < MAXCOLOR; i++)
 //		pal_set(pal_no, i, color[i][0]/2, color[i][1]/2, color[i][2]/2);
 		pal_set(pal_no, i, color[i][0]*31/15, color[i][1]*31/15, color[i][2]*31/15);
+}
+
+void pal_all2(unsigned char pal_no, unsigned char color[MAXCOLOR][3])
+{
+	unsigned short i;
+	for(i = 0; i < MAXCOLOR; i++)
+//		pal_set(pal_no, i, color[i][0]/2, color[i][1]/2, color[i][2]/2);
+		pal_set2(pal_no, i, color[i][0]/2, color[i][1]/2, color[i][2]/2);
 }
 
 //value < 0 •‚É‹ß‚Ã‚¯‚éB
@@ -2341,15 +2361,14 @@ void do_put_stage(unsigned char no)
 	VDPsetAREA2();
 }
 
-
 /* ƒQ|ƒ€–{‘Ì‚Ìˆ— */
 short errlv = 0;
-unsigned char *vdp_value = 0xf3df;
-unsigned char *forclr = 0xf3e9;
-unsigned char *bakclr = 0xf3ea;
-unsigned char *bdrclr = 0xf3eb;
-unsigned char *clicksw = 0xf3db;
-unsigned char *oldscr = 0xfcb0;
+#define vdp_value ((volatile unsigned char *)0xf3df)
+#define forclr ((volatile unsigned char *)0xf3e9)
+#define bakclr ((volatile unsigned char *)0xf3ea)
+#define bdrclr ((volatile unsigned char *)0xf3eb)
+#define clicksw ((volatile unsigned char *)0xf3db)
+#define oldscr ((volatile unsigned char *)0xfcb0)
 
 unsigned char forclr_old, bakclr_old, bdrclr_old, clicksw_old;
 
@@ -2360,10 +2379,10 @@ int	main(int argc,char **argv)
 
 	clicksw_old = *clicksw;
 	*clicksw = 0;
-	forclr_old = *forclr;
+/*	forclr_old = *forclr;
 	bakclr_old = *bakclr;
 	bdrclr_old = *bdrclr;
-
+*/
 	VDP_readadr = read_mainrom(0x0006);
 	VDP_writeadr = read_mainrom(0x0007);
 	if (argc >= 2){
@@ -2384,11 +2403,13 @@ int	main(int argc,char **argv)
 		write_VDP(6, 0x0f); // Sprite pattern generatorable base adderss register
 		write_VDP(7, 0x02); // Back drop color register
 	}else{
-		*forclr = 15;
+/*		*forclr = 15;
 		*bakclr = 0;
 		*bdrclr = 2;
 		set_screencolor();
+*/
 		set_screenmode(5);
+		write_VDP(7, 0x02); // Back drop color register
 		write_VDP(1, vdp_value[1] | 0x02);
 	}
 	set_displaypage(0);
@@ -2794,29 +2815,31 @@ __endasm;
 
 	reset_int();
 
-	DI();
-	pal_all(CHRPAL_NO, org_pal);
-	EI();
-
-	write_VDP(20, 0x0);
-
 	if(argc < 2){
-		*forclr = forclr_old;
+/*		*forclr = forclr_old;
 		*bakclr = bakclr_old;
 		*bdrclr = bdrclr_old;
 		set_screencolor();
+*/
+		write_VDP(20, 0x0);
+		DI();
+		pal_all2(CHRPAL_NO, org_pal);
+		EI();
 	}
+
 	set_screenmode(*oldscr);
 	*clicksw = clicksw_old;
 
-	key_flush();
 
 	VDP_readadr = read_mainrom(0x0006);
 	VDP_writeadr = read_mainrom(0x0007);
 	write_VDP(1, vdp_value[1] | 0x20); // IE=1;
 
+	key_flush();
+
 //	term();
 //	exit(0);
+
 	return 0;
 }
 
@@ -3035,6 +3058,7 @@ __asm
 __endasm;
 }
 
+/*
 void set_int2(void)
 {
 //#ifndef SINGLEMODE
@@ -3080,7 +3104,7 @@ slotset2:
 __endasm;
 //#endif
 }
-
+*/
 void reset_int(void)
 {
 #ifndef SINGLEMODE
