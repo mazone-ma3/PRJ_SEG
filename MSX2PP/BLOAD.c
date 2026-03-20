@@ -37,6 +37,8 @@ short m = 0;
 unsigned char read_pattern[WIDTH * LINE * 2 + 2];
 unsigned char pattern[10];
 
+#define oldscr ((volatile unsigned char *)0xfcb0)
+
 /* screenのBIOS切り替え */
 void set_screenmode(unsigned char mode) __sdcccall(1)
 {
@@ -82,17 +84,42 @@ __asm
 __endasm;
 }
 
-void write_VDP(unsigned char regno, unsigned char data)
+void write_VDP(unsigned char regno, unsigned char data) __sdcccall(1)
 {
-	outp(VDP_writeport(VDP_WRITECONTROL), data);
-	outp(VDP_writeport(VDP_WRITECONTROL), 0x80 | regno);
+//	outp(VDP_writeport(VDP_WRITECONTROL), data);
+//	outp(VDP_writeport(VDP_WRITECONTROL), 0x80 | regno);
+__asm
+	ld	h,a
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+	ld	a,l
+	out	(c),a
+	ld	a,h
+	set 7,a
+	out	(c),a
+__endasm;
 }
 
 void write_vram_adr(unsigned char highadr, int lowadr) __sdcccall(1)
 {
-	write_VDP(14, (((highadr  << 2) & 0x04) | (lowadr >> 14) & 0x03));
-	outp(VDP_writeport(VDP_WRITECONTROL), (lowadr & 0xff));
-	outp(VDP_writeport(VDP_WRITECONTROL), 0x40 | ((lowadr >> 8) & 0x3f));
+__asm
+	push	de
+__endasm;
+	write_VDP(14, (((highadr  << 2) & 0x0c) | (lowadr >> 14) & 0x03));	// V9968
+__asm
+	pop	de
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+	out	(c),e
+	ld	a,d
+	and	a,0x3f
+	set	6,a
+	out	(c),a
+__endasm;
+//	outp(VDP_writeport(VDP_WRITECONTROL), (lowadr & 0xff));
+//	outp(VDP_writeport(VDP_WRITECONTROL), 0x40 | ((lowadr >> 8) & 0x3f));
 }
 
 void write_vram_data(unsigned char data) __sdcccall(1)
@@ -105,7 +132,7 @@ void set_displaypage(int page) __sdcccall(1)
 __asm
 	DI
 __endasm;
-	write_VDP(2, (page << 5) & 0x60 | 0x1f);
+	write_VDP(2, (page << 5) & 0xe0 | 0x1f);
 __asm
 	EI
 __endasm;
@@ -124,6 +151,7 @@ __endasm;*/
 unsigned short vram_start_adr, vram_end_adr;
 unsigned char page = 0;
 unsigned char mode = 0;
+unsigned char mode2 = 0;
 
 int conv(char *loadfil)
 {
@@ -145,9 +173,33 @@ int conv(char *loadfil)
 		return ERROR;
 	}
 
-	set_screenmode(5);
-	VDP_readadr = read_mainrom(0x0006);
-	VDP_writeadr = read_mainrom(0x0007);
+	if(page >= 8){
+		VDP_readadr = 0x88;
+		VDP_writeadr = 0x88;
+	}else{
+		VDP_readadr = read_mainrom(0x0006);
+		VDP_writeadr = read_mainrom(0x0007);
+	}
+
+	if(page < 8)
+		set_screenmode(5);
+
+	if(page >= 8){
+		write_VDP(0, 0x06); // Mode 0
+//		write_VDP(1, 0x60); // Mode 1 IE=1
+		write_VDP(1, 0x40); // Mode 1 IE=0
+		write_VDP(8, 0x0a); // Mode 2
+		write_VDP(9, 0x08); // Mode 3
+
+		write_VDP(2, 0x1f); // Pattern name table base address register
+		write_VDP(5, 0xef); // Sprite attibute table base adderss register
+		write_VDP(11, 0x00); // Sprite attibute table base adderss register
+		write_VDP(6, 0x0f); // Sprite pattern generatorable base adderss register
+//		write_VDP(7, 0x02); // Back drop color register
+	}
+
+	write_VDP(20, 0xef);	/* V9968拡張 */
+
 
 	fread(pattern, 1, 2, stream[0]);	/* MSXヘッダ 開始アドレス */
 	vram_start_adr = pattern[0] + pattern[1] * 256;
@@ -157,7 +209,10 @@ int conv(char *loadfil)
 
 	fread(pattern, 1, 2, stream[0]);	/* MSXヘッダ 0 */
 
-	switch(page){
+	switch(page % 8){
+		case 0:
+			write_vram_adr(0x00, vram_start_adr);
+			break;
 		case 1:
 			write_vram_adr(0x00, vram_start_adr + 0x8000);
 			break;
@@ -167,13 +222,24 @@ int conv(char *loadfil)
 		case 3:
 			write_vram_adr(0x01, vram_start_adr + 0x8000);
 			break;
-		default:
-			write_vram_adr(0x00, vram_start_adr);
+		case 4:
+			write_vram_adr(0x02, vram_start_adr);
+			break;
+		case 5:
+			write_vram_adr(0x02, vram_start_adr + 0x8000);
+			break;
+		case 6:
+			write_vram_adr(0x03, vram_start_adr);
+			break;
+		case 7:
+			write_vram_adr(0x03, vram_start_adr + 0x8000);
 			break;
 	}
-	if(page < 4)
-		if(mode)
-			set_displaypage(page);
+//	if(page < 4)
+	if(mode)
+		set_displaypage(page % 8);
+	else
+		set_displaypage(0);
 
 	n = vram_start_adr;
 	for(count = 0; count < 4; ++count){
@@ -193,10 +259,17 @@ int conv(char *loadfil)
 	}
 	fclose(stream[0]);
 
+	write_VDP(20, 0x0);
+
+	if(mode)
+//		if(!mode2)
+			getch();
+
+	if(page < 8)
+		set_screenmode(*oldscr);
+
 	return NOERROR;
 }
-
-unsigned char *oldscr = 0xfcb0;
 
 int	main(int argc,char **argv){
 //	printf("%d\n", argc);
@@ -209,27 +282,26 @@ int	main(int argc,char **argv){
 
 	if (argc >= 3){ //argv[2] != NULL){
 		page = atoi(argv[2]);
-		if(page > 3)
-			page = 0;
+//		if(page >= 8){
+//			mode2 = page / 8;
+//			page %= 8;
+//		}
 /*		else{
 			printf("page: %d\n",page);
 			getch();
 		}
 */	}
 
-	if(argc < 4)
+	if(argc <= 3){
 //	if(argv[3] == NULL)
 		mode = 1;
+	}
 
 	if(conv(argv[1]))
 //		end();
 //		exit(1);
 		return ERROR;
 
-	if(mode)
-		getch();
-
-	set_screenmode(*oldscr);
 	end();
 
 	return NOERROR;

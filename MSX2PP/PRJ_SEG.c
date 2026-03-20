@@ -1026,7 +1026,7 @@ __endasm;
 void set_displaypage(int page) __sdcccall(1)
 {
 	DI();
-	write_VDP(2, (page << 5) & 0x60 | 0x1f);
+	write_VDP(2, (page << 5) & 0xe0 | 0x1f);
 	EI();
 }
 
@@ -2358,29 +2358,41 @@ int	main(int argc,char **argv)
 	bgmmode = checkbgm();
 //	getchar();
 
-	if (argc < 2){
-		VDP_readadr = read_mainrom(0x0006);
-		VDP_writeadr = read_mainrom(0x0007);
-	}else{
-		VDP_readadr = VDP_writeadr = 0x88;
-	}
-
+	clicksw_old = *clicksw;
+	*clicksw = 0;
 	forclr_old = *forclr;
 	bakclr_old = *bakclr;
 	bdrclr_old = *bdrclr;
 
-	*forclr = 15;
-	*bakclr = 0;
-	*bdrclr = 2;
-	set_screencolor();
+	VDP_readadr = read_mainrom(0x0006);
+	VDP_writeadr = read_mainrom(0x0007);
+	if (argc >= 2){
+		set_screenmode(5);
+		write_VDP(0, vdp_value[0] & 0xcf); // IE2/1=0;
+//		write_VDP(1, vdp_value[1] & 0xdf); // IE=0;
+		VDP_readadr = VDP_writeadr = 0x88;
 
-	clicksw_old = *clicksw;
-	*clicksw = 0;
+		write_VDP(0, 0x06); // Mode 0
+//		write_VDP(1, 0x62); // Mode 1 IE=1
+		write_VDP(1, 0x42); // Mode 1 IE=0
+		write_VDP(8, 0x0a); // Mode 2
+		write_VDP(9, 0x88); // Mode 3
 
-	set_screenmode(5);
+		write_VDP(2, 0x1f); // Pattern name table base address register
+		write_VDP(5, 0xef); // Sprite attibute table base adderss register
+		write_VDP(11, 0x00); // Sprite attibute table base adderss register
+		write_VDP(6, 0x0f); // Sprite pattern generatorable base adderss register
+		write_VDP(7, 0x02); // Back drop color register
+	}else{
+		*forclr = 15;
+		*bakclr = 0;
+		*bdrclr = 2;
+		set_screencolor();
+		set_screenmode(5);
+		write_VDP(1, vdp_value[1] | 0x02);
+	}
 	set_displaypage(0);
 	DI();
-	write_VDP(1, vdp_value[1] | 0x02);
 	EI();
 
 	// 11011111b
@@ -2466,7 +2478,11 @@ int	main(int argc,char **argv)
 
 		DI();
 		set_int3();
-		write_VDP(0, vdp_value[0] | 0x10);
+		if (argc < 2){
+			write_VDP(0, vdp_value[0] | 0x10);
+		}else{
+			write_VDP(0, 0x06 | 0x10);
+		}
 		pal_all(CHRPAL_NO, org_pal);
 		EI();
 		do{
@@ -2481,7 +2497,11 @@ int	main(int argc,char **argv)
 			}
 		}while(!(keycode & (KEY_A | KEY_START)));
 		DI();
-		write_VDP(0, vdp_value[0]);
+		if (argc < 2){
+			write_VDP(0, vdp_value[0]);
+		}else{
+			write_VDP(0, 0x06);
+		}
 		reset_int2();
 		write_VDP(26, 0);
 		write_VDP(27, 0);
@@ -2778,17 +2798,23 @@ __endasm;
 	pal_all(CHRPAL_NO, org_pal);
 	EI();
 
-	*forclr = forclr_old;
-	*bakclr = bakclr_old;
-	*bdrclr = bdrclr_old;
-	set_screencolor();
-
 	write_VDP(20, 0x0);
-	set_screenmode(*oldscr);
 
+	if(argc < 2){
+		*forclr = forclr_old;
+		*bakclr = bakclr_old;
+		*bdrclr = bdrclr_old;
+		set_screencolor();
+	}
+	set_screenmode(*oldscr);
 	*clicksw = clicksw_old;
 
 	key_flush();
+
+	VDP_readadr = read_mainrom(0x0006);
+	VDP_writeadr = read_mainrom(0x0007);
+	write_VDP(1, vdp_value[1] | 0x20); // IE=1;
+
 //	term();
 //	exit(0);
 	return 0;
