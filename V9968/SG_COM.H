@@ -1271,7 +1271,7 @@ void com_putmessage(void)//(unsigned char i)
 
 void com_putstage(void)//(unsigned char i)
 {
-#ifdef MSX2PP
+#ifdef V9968
 		do_put_stage(stage);
 #endif
 
@@ -1302,7 +1302,7 @@ void com_putstage(void)//(unsigned char i)
 		put_strings(SCREEN2, str_x + 6, str_y, str_temp, CHRPAL_NO);
 #endif
 
-#ifndef MSX2PP
+#ifndef V9968
 		do_put_stage(stage - 1);
 #else
 		score_displayall();
@@ -1480,12 +1480,12 @@ short game_loop(void){
 				do_putmessage();
 				set_object();
 #else
-#ifdef MSX2PP
+#ifdef V9968
 				game_put();
 				set_sprite();
 #else
 
-//#ifdef MSX2PP
+//#ifdef V9968
 //	tmp_spr_count = 0;
 //#endif
 //#ifdef X68K
@@ -1507,7 +1507,7 @@ short game_loop(void){
 				set_sprite();
 				wait_vsync();
 #else
-#ifdef MSX2PP
+#ifdef V9968
 				game_put();
 				set_sprite();
 #else
@@ -1522,7 +1522,7 @@ short game_loop(void){
 				set_sprite();
 				wait_vsync();
 #else
-#ifdef MSX2PP
+#ifdef V9968
 				game_put();
 				set_sprite();
 #else
@@ -1553,7 +1553,7 @@ short game_loop(void){
 				set_sprite();
 				wait_vsync();
 #else
-#ifdef MSX2PP
+#ifdef V9968
 				game_put();
 				set_sprite();
 #else

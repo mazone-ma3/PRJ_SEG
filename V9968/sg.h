@@ -3,7 +3,7 @@
 #ifndef SG_H_INCLUDE
 #define SG_H_INCLUDE
 
-#define MSX2PP
+#define V9968
 
 #define ABS(X) ((X < 0) ? -X : X)
 
