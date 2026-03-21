@@ -1,4 +1,4 @@
-/* 共通マクロ for MSX2 */
+/* 共通マクロ for V9968 */
 
 #ifndef SG_H_INCLUDE
 #define SG_H_INCLUDE

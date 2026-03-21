@@ -1,4 +1,4 @@
-/* Game Data (Common) for MSX2 */
+/* Game Data (Common) for V9968 */
 #ifndef SG_SHT_H_INCLUDE
 #define SG_SHT_H_INCLUDE
 

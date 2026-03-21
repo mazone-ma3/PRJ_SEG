@@ -1,4 +1,4 @@
-/* Project Segreta ƒQ|ƒ€–{‘Ì for MSX2 */
+/* Project Segreta ƒQ|ƒ€–{‘Ì for V9968 */
 
 #include <string.h>
 
