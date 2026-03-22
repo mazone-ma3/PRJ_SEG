@@ -40,7 +40,7 @@ enum {
 	JIKI_MAX_Y = (SPR_MAX_Y - (16 << SHIFT_NUM)),//((18 * 8) << SHIFT_NUM), //
 
 	JIKI_MIN_X = (SPR_MIN_X),
-	JIKI_MIN_Y = (SPR_MIN_Y),
+	JIKI_MIN_Y = ((16 * 2) << SHIFT_NUM), //(SPR_MIN_Y),
 
 	/* 当たり判定情報 オフセットとサイズ */
 	MY_OFS_X = 9,
