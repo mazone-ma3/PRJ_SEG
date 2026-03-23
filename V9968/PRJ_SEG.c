@@ -2164,8 +2164,9 @@ spr_end:
 #endif
 //	}
 	EI();
-	sys_wait(1);
-	init_sys_wait();
+	wait_vsync();
+//	sys_wait(1);
+//	init_sys_wait();
 //	EI();
 }
 
