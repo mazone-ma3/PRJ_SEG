@@ -1402,6 +1402,10 @@ __endasm;
 */
 //	return;
 
+	while(!vsync_flag);
+	vsync_flag = 0;
+	return;
+
 	while(*jiffy == old_jiffy);
 	old_jiffy = *jiffy;
 
@@ -2372,6 +2376,8 @@ short errlv = 0;
 
 unsigned char forclr_old, bakclr_old, bdrclr_old, clicksw_old;
 
+unsigned char vdpmode = 0;
+
 int	main(int argc,char **argv)
 {
 	bgmmode = checkbgm();
@@ -2385,15 +2391,19 @@ int	main(int argc,char **argv)
 */
 	VDP_readadr = read_mainrom(0x0006);
 	VDP_writeadr = read_mainrom(0x0007);
+
+//	DI();
+
 	if (argc >= 2){
+		vdpmode = 1;
 		set_screenmode(5);
 		write_VDP(0, vdp_value[0] & 0xcf); // IE2/1=0;
-//		write_VDP(1, vdp_value[1] & 0xdf); // IE=0;
+//		write_VDP(1, vdp_value[1] & 0xdf); // IE0=0;
 		VDP_readadr = VDP_writeadr = 0x88;
 
-		write_VDP(1, 0x02); // Mode 1 IE=0
+		write_VDP(1, 0x02); // Mode 1 IE0=0
+//		write_VDP(1, 0x62); // Mode 1 IE0=1
 		write_VDP(0, 0x06); // Mode 0
-//		write_VDP(1, 0x62); // Mode 1 IE=1
 		write_VDP(8, 0x0a); // Mode 2
 		write_VDP(9, 0x88); // Mode 3
 
@@ -2403,6 +2413,8 @@ int	main(int argc,char **argv)
 		write_VDP(6, 0x0f); // Sprite pattern generatorable base adderss register
 		write_VDP(7, 0x02); // Back drop color register
 	}else{
+		vdpmode = 0;
+
 /*		*forclr = 15;
 		*bakclr = 0;
 		*bdrclr = 2;
@@ -2410,11 +2422,12 @@ int	main(int argc,char **argv)
 */
 		set_screenmode(5);
 		write_VDP(7, 0x02); // Back drop color register
-		write_VDP(1, vdp_value[1] | 0x02);
+		write_VDP(1, vdp_value[1] | 0x02);	// Sprite=16x16
 	}
 	set_displaypage(0);
-	DI();
-	EI();
+
+//	DI();
+//	EI();
 
 	// 11011111b
 	write_VDP(20, 0xff);	/* V9968Šg’£ */
@@ -2422,6 +2435,7 @@ int	main(int argc,char **argv)
 
 	write_VDP(21,0);
 	if((read_VDPstatus(1) & 0x3e) == 0x06){
+//		vdpmode = 0;
 		pal_set(1, 0, 0, 0, 0);
 		for(i = 1; i < MAXCOLOR; i++)
 //		pal_set(pal_no, i, color[i][0]/2, color[i][1]/2, color[i][2]/2);
@@ -2436,13 +2450,24 @@ int	main(int argc,char **argv)
 	tmp_spr_count = 0;
 	old_count[0] = old_count[1] = 0; //MAX_SPRITE;
 
-	set_int();
+	DI();
+	if(!vdpmode)
+		set_int();
+	else{
+		read_VDPstatus(1);
+		set_int3();
+//		write_VDP(1, 0x62); // Mode 1 Sprite=16x16 IE0=1
+	}
+
+	EI();
+
 	old_jiffy = *jiffy;
 
 	do{
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
-		if (argc >= 2){
-			write_VDP(1, 0x42); // Mode 1 IE=0
+		if (vdpmode){
+//			write_VDP(1, 0x42); // Mode 1 Sprite=16x16 IE0=0 BL=1(Disp ON)
+			write_VDP(1, 0x62); // Mode 1 Sprite=16x16 IE0=1 BL=1(Disp ON)
 		}
 //		boxfill(0, 256*4, 256, 212, 0, 0, 0x00);
 		do_put_stage(0);
@@ -2502,8 +2527,10 @@ int	main(int argc,char **argv)
 //		wait_vsync();
 
 		DI();
-		set_int3();
-		if (argc < 2){
+		if(!vdpmode)
+			set_int3();
+		// Raster ON
+		if (!vdpmode){
 			write_VDP(0, vdp_value[0] | 0x10);
 		}else{
 			write_VDP(0, 0x06 | 0x10);
@@ -2525,12 +2552,14 @@ int	main(int argc,char **argv)
 			}
 		}while(!(keycode & (KEY_A | KEY_START)));
 		DI();
-		if (argc < 2){
+		// Raster OFF
+		if (!vdpmode){
 			write_VDP(0, vdp_value[0]);
 		}else{
 			write_VDP(0, 0x06);
 		}
-		reset_int2();
+		if(!vdpmode)
+			reset_int2();
 		write_VDP(26, 0);
 		write_VDP(27, 0);
 		EI();
@@ -2820,9 +2849,14 @@ __endasm;
 	stopbgm();
 	set_vol(0);
 
-	reset_int();
+	if(!vdpmode){
+		reset_int();
+	}else{
+		write_VDP(1, 0x42); // Mode 1 Sprite=16x16 IE0=0 BL=1(Disp ON)
+		reset_int2();
+	}
 
-	if(argc < 2){
+	if(!vdpmode){
 /*		*forclr = forclr_old;
 		*bakclr = bakclr_old;
 		*bdrclr = bdrclr_old;
@@ -2840,7 +2874,7 @@ __endasm;
 
 	VDP_readadr = read_mainrom(0x0006);
 	VDP_writeadr = read_mainrom(0x0007);
-	write_VDP(1, vdp_value[1] | 0x20); // IE=1;
+	write_VDP(1, vdp_value[1] | 0x20); // Internal VDPIE0=1;
 
 	key_flush();
 
@@ -2868,7 +2902,7 @@ __asm
 	ld	a,(_VDP_readadr)
 	inc	a
 	ld	c,a
-	in a,(c)
+	in a,(c)				; S#1 Read
 
 	rrca
 	jr	nc,hsyncend
@@ -2959,7 +2993,44 @@ hsyncend:
 	xor	a
 	out	(c),a
 	ld	a,15 | 080h
+	out	(c),a				; Status Register Pointer = 0
+
+	ld	a,(_vdpmode)
+	or	a
+	jr	z,INTWORK2
+
+	ld	a,(_VDP_readadr)
+	inc	a
+	ld	c,a
+	in a,(c)				; External VDP S#0 Read
+
+	rlca
+	jr	nc,INTWORK2
+
+	push	af
+__endasm;
+
+	vsync_flag = 1;
+	if(spr_flag == 1){
+		spr_flag = 0;
+//		set_spr_atr_adr(spr_next); 
+//		write_VDP(11, ((spr_next << 1) & 0x02));
+__asm
+	ld	a,(_VDP_writeadr)
+	inc	a
+	ld	c,a
+	ld	a,(_spr_next)
+	add	a,a
+	and	a,#0x02
 	out	(c),a
+	ld	a,11 | 0x80
+	out	(c),a
+
+__endasm;
+	}
+
+__asm
+	pop	af
 
 INTWORK2:
 	DB	0,0,0,0,0
