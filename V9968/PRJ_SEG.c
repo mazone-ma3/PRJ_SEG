@@ -2397,6 +2397,7 @@ int	main(int argc,char **argv)
 	if (argc >= 2){
 		vdpmode = 1;
 		set_screenmode(5);
+		DI();
 		write_VDP(0, vdp_value[0] & 0xcf); // IE2/1=0;
 //		write_VDP(1, vdp_value[1] & 0xdf); // IE0=0;
 		VDP_readadr = VDP_writeadr = 0x88;
@@ -2412,6 +2413,7 @@ int	main(int argc,char **argv)
 		write_VDP(11, 0x00); // Sprite attibute table base adderss register
 		write_VDP(6, 0x0f); // Sprite pattern generatorable base adderss register
 		write_VDP(7, 0x02); // Back drop color register
+		EI();
 	}else{
 		vdpmode = 0;
 
@@ -2421,19 +2423,22 @@ int	main(int argc,char **argv)
 		set_screencolor();
 */
 		set_screenmode(5);
+		DI();
 		write_VDP(7, 0x02); // Back drop color register
 		write_VDP(1, vdp_value[1] | 0x02);	// Sprite=16x16
+		EI();
 	}
 	set_displaypage(0);
 
-//	DI();
-//	EI();
+	DI();
 
 	// 11011111b
 	write_VDP(20, 0xff);	/* V9968Šg’£ */
 	write_VDP(6, 0x30);		/* V9968 SPMode3 SpritePatternGeneratoriTable */
 
 	write_VDP(21,0);
+	EI();
+
 	if((read_VDPstatus(1) & 0x3e) == 0x06){
 //		vdpmode = 0;
 		pal_set(1, 0, 0, 0, 0);
@@ -2466,8 +2471,10 @@ int	main(int argc,char **argv)
 	do{
 		boxfill(0, 0, 256, 212, 0, 0, 0x00);
 		if (vdpmode){
+			DI();
 //			write_VDP(1, 0x42); // Mode 1 Sprite=16x16 IE0=0 BL=1(Disp ON)
 			write_VDP(1, 0x62); // Mode 1 Sprite=16x16 IE0=1 BL=1(Disp ON)
+			EI();
 		}
 //		boxfill(0, 256*4, 256, 212, 0, 0, 0x00);
 		do_put_stage(0);
@@ -2535,11 +2542,11 @@ int	main(int argc,char **argv)
 		}else{
 			write_VDP(0, 0x06 | 0x10);
 		}
+		EI();
 		if((read_VDPstatus(1) & 0x3e) == 0x06){
 			wait_vsync();
 			pal_all(CHRPAL_NO, org_pal);
 		}
-		EI();
 		do{
 			if(vsync_flag){
 				vsync_flag = 0;
@@ -2560,6 +2567,7 @@ int	main(int argc,char **argv)
 		}
 		if(!vdpmode)
 			reset_int2();
+		DI();
 		write_VDP(26, 0);
 		write_VDP(27, 0);
 		EI();
@@ -2852,6 +2860,7 @@ __endasm;
 	if(!vdpmode){
 		reset_int();
 	}else{
+		DI();
 		write_VDP(1, 0x42); // Mode 1 Sprite=16x16 IE0=0 BL=1(Disp ON)
 		reset_int2();
 	}
@@ -2872,9 +2881,9 @@ __endasm;
 	*clicksw = clicksw_old;
 
 
-	VDP_readadr = read_mainrom(0x0006);
-	VDP_writeadr = read_mainrom(0x0007);
-	write_VDP(1, vdp_value[1] | 0x20); // Internal VDPIE0=1;
+//	VDP_readadr = read_mainrom(0x0006);
+//	VDP_writeadr = read_mainrom(0x0007);
+//	write_VDP(1, vdp_value[1] | 0x20); // Internal VDPIE0=1;
 
 	key_flush();
 
