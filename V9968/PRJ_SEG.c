@@ -1383,7 +1383,7 @@ __asm
 __endasm;
 }*/
 
-unsigned char *jiffy = (unsigned char *)0xfc9e;
+#define jiffy ((volatile unsigned char *)0xfc9e)
 unsigned char jiffy_flag = 0;
 unsigned char old_jiffy;
 unsigned char old_jiffy2 = 0;
@@ -2407,7 +2407,7 @@ int	main(int argc,char **argv)
 //		write_VDP(1, 0x62); // Mode 1 IE0=1
 		write_VDP(0, 0x06); // Mode 0
 		write_VDP(8, 0x0a); // Mode 2
-		write_VDP(9, 0x88); // Mode 3
+		write_VDP(9, 0x80); // Mode 3
 
 		write_VDP(2, 0x1f); // Pattern name table base address register
 		write_VDP(5, 0xef); // Sprite attibute table base adderss register
@@ -2461,6 +2461,7 @@ int	main(int argc,char **argv)
 		set_int();
 	else{
 		read_VDPstatus(1);
+//		set_int2();
 		set_int3();
 //		write_VDP(1, 0x62); // Mode 1 Sprite=16x16 IE0=1
 	}
@@ -2536,6 +2537,7 @@ int	main(int argc,char **argv)
 
 		DI();
 		if(!vdpmode)
+//			set_int2();
 			set_int3();
 		// Raster ON
 		if (!vdpmode){
@@ -3146,7 +3148,7 @@ __asm
 __endasm;
 }
 
-/*
+
 void set_int2(void)
 {
 //#ifndef SINGLEMODE
@@ -3192,7 +3194,7 @@ slotset2:
 __endasm;
 //#endif
 }
-*/
+
 void reset_int(void)
 {
 #ifndef SINGLEMODE
