@@ -2437,7 +2437,7 @@ int	main(int argc,char **argv)
 	write_VDP(20, 0xff);	/* V9968Šg’£ */
 	write_VDP(6, 0x30);		/* V9968 SPMode3 SpritePatternGeneratoriTable */
 
-	write_VDP(21,0);
+	write_VDP(21,0x3a);
 	EI();
 
 	if((read_VDPstatus(1) & 0x3e) == 0x06){
@@ -2874,6 +2874,7 @@ __endasm;
 		*bdrclr = bdrclr_old;
 		set_screencolor();
 */
+		write_VDP(21,0x3b);
 		write_VDP(20, 0x0);
 		DI();
 		pal_all2(CHRPAL_NO, org_pal);
