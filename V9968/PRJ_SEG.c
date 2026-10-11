@@ -460,7 +460,8 @@ enum {
 	VDP_WRITEDATA = 0,
 	VDP_WRITECONTROL = 1,
 	VDP_WRITEPAL = 2,
-	VDP_WRITEINDEX = 3
+	VDP_WRITEINDEX = 3,
+	VDP_WRITEV9968 = 4
 };
 
 #define VDP_readport(no) (VDP_readadr + no)
@@ -2433,11 +2434,14 @@ int	main(int argc,char **argv)
 
 	DI();
 
-	// 11011111b
-	write_VDP(20, 0xff);	/* V9968Šg’£ */
-	write_VDP(6, 0x30);		/* V9968 SPMode3 SpritePatternGeneratoriTable */
+	outp(VDP_writeport(VDP_WRITEV9968), 0);
 
 	write_VDP(21,0x3a);
+
+	// 11011111b
+	write_VDP(20, 0x1f);	/* V9968Šg’£ */
+	write_VDP(6, 0x30);		/* V9968 SPMode3 SpritePatternGeneratoriTable */
+
 	EI();
 
 	if((read_VDPstatus(1) & 0x3e) == 0x06){

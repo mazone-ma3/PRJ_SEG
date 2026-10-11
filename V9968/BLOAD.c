@@ -19,7 +19,8 @@ enum {
 	VDP_WRITEDATA = 0,
 	VDP_WRITECONTROL = 1,
 	VDP_WRITEPAL = 2,
-	VDP_WRITEINDEX = 3
+	VDP_WRITEINDEX = 3,
+	VDP_WRITEV9968 = 4
 };
 
 #define VDP_readport(no) (VDP_readadr + no)
@@ -198,7 +199,10 @@ int conv(char *loadfil)
 //		write_VDP(7, 0x02); // Back drop color register
 	}
 
-	write_VDP(20, 0xef);	/* V9968拡張 */
+	outp(VDP_writeport(VDP_WRITEV9968), 0);
+
+	write_VDP(21,0x3a);
+	write_VDP(20, 0x1f);	/* V9968拡張 */
 
 
 	fread(pattern, 1, 2, stream[0]);	/* MSXヘッダ 開始アドレス */
@@ -260,6 +264,7 @@ int conv(char *loadfil)
 	fclose(stream[0]);
 
 	write_VDP(20, 0x0);
+	write_VDP(21,0x3b);
 
 	if(mode)
 //		if(!mode2)
